@@ -6,7 +6,9 @@ import {
   Layers, 
   DollarSign, 
   UploadCloud,
-  Activity
+  Activity,
+  Sparkles,
+  SlidersHorizontal
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -22,6 +24,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => 
     { id: 'mrp', label: 'MRP', icon: Layers },
     { id: 'profit', label: 'Profitability', icon: DollarSign },
     { id: 'upload', label: 'Upload Data', icon: UploadCloud },
+    { id: 'copilot', label: 'AI Copilot', icon: Sparkles },
+    { id: 'digital-twin', label: 'Digital Twin', icon: SlidersHorizontal },
   ];
 
   return (

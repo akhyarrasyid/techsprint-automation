@@ -5,7 +5,9 @@ import {
   ProductMRP,
   ProductProfitability,
   ValidationReport,
-  PipelineResults
+  PipelineResults,
+  ProfitabilityReport,
+  AIInsight
 } from './types';
 
 import {
@@ -14,6 +16,8 @@ import {
   fetchInventory,
   fetchMRP,
   fetchProfitability,
+  fetchProfitabilityReport,
+  fetchInsights,
   uploadSalesCSV,
   runPipeline
 } from './api';
@@ -321,5 +325,48 @@ export async function safeRunPipeline(scenario: string = 'Base'): Promise<Pipeli
       mrp: MOCK_MRP,
       profitability: MOCK_PROFITABILITY
     };
+  }
+}
+
+// ── MOCK PROFITABILITY REPORT (Scenario Engine) ──
+export const MOCK_PROFITABILITY_REPORT: ProfitabilityReport = {
+  by_product: [
+    { product_id: 'PRD001', product_name: 'Tepung Protein Tinggi', revenue: 20850000, cogs: 13205000, gross_profit: 7645000, margin_pct: 36.7 },
+    { product_id: 'PRD002', product_name: 'Tepung Protein Sedang', revenue: 21240000, cogs: 13570000, gross_profit: 7670000, margin_pct: 36.1 },
+    { product_id: 'PRD003', product_name: 'Tepung Protein Rendah', revenue: 13720000, cogs: 8820000, gross_profit: 4900000, margin_pct: 35.7 },
+    { product_id: 'PRD004', product_name: 'Premix Donat', revenue: 15480000, cogs: 10320000, gross_profit: 5160000, margin_pct: 33.3 },
+    { product_id: 'PRD005', product_name: 'Premix Cake', revenue: 11380000, cogs: 7560000, gross_profit: 3820000, margin_pct: 33.6 },
+  ],
+  scenarios: [
+    { name: 'Base', total_revenue: 82670000, total_cogs: 53475000, gross_profit: 29195000, margin_pct: 35.3, service_level: 98, holding_cost: 3200000 },
+    { name: 'High Demand +20%', total_revenue: 99204000, total_cogs: 64170000, gross_profit: 35034000, margin_pct: 35.3, service_level: 80, holding_cost: 3200000 },
+    { name: 'Supplier Delay +5 hari', total_revenue: 82670000, total_cogs: 53475000, gross_profit: 24100000, margin_pct: 29.2, service_level: 82, holding_cost: 4800000 },
+    { name: 'Raw Material +10%', total_revenue: 82670000, total_cogs: 58822500, gross_profit: 23847500, margin_pct: 28.8, service_level: 98, holding_cost: 3520000 },
+  ]
+};
+
+// ── MOCK AI INSIGHTS ──
+export const MOCK_INSIGHTS: AIInsight[] = [
+  { type: 'risk', title: 'Stockout Risk — Minyak Goreng', description: 'Minyak Goreng memiliki stok 550 unit, mendekati safety stock. Diperkirakan kehabisan stok dalam 4 hari.', severity: 'high', product_id: 'PRD003' },
+  { type: 'action', title: 'PO Required — RAW001', description: 'Material shortage Gandum: 768 unit. Supplier UD Makmur lead time 4 hari. Rilis PO hari ini.', severity: 'high', material_id: 'RAW001' },
+  { type: 'opportunity', title: 'Demand Growth — Tepung Protein Tinggi', description: 'Tepung Protein Tinggi mengalami tren kenaikan 8.3%. Pertimbangkan peningkatan kapasitas produksi.', severity: 'low', product_id: 'PRD001' },
+  { type: 'warning', title: 'Supplier Delay Simulation', description: 'Delay +5 hari menurunkan service level dari 98% menjadi 82%. Disarankan meningkatkan safety stock.', severity: 'medium' },
+];
+
+export async function safeProfitabilityReport(scenario: string = 'Base'): Promise<ProfitabilityReport> {
+  try {
+    return await fetchProfitabilityReport(scenario);
+  } catch (error) {
+    console.warn('API fetch failed, falling back to mock profitability report:', error);
+    return MOCK_PROFITABILITY_REPORT;
+  }
+}
+
+export async function safeInsights(scenario: string = 'Base'): Promise<AIInsight[]> {
+  try {
+    return await fetchInsights(scenario);
+  } catch (error) {
+    console.warn('API fetch failed, falling back to mock insights:', error);
+    return MOCK_INSIGHTS;
   }
 }

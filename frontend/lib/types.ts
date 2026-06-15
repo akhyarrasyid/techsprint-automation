@@ -94,3 +94,36 @@ export interface HealthStatus {
   environment: string;
   model: string;
 }
+
+export interface ScenarioComparison {
+  name: string;
+  total_revenue: number;
+  total_cogs: number;
+  gross_profit: number;
+  margin_pct: number;
+  service_level: number;
+  holding_cost: number;
+}
+
+export interface ProductProfit {
+  product_id: string;
+  product_name: string;
+  revenue: number;
+  cogs: number;
+  gross_profit: number;
+  margin_pct: number;
+}
+
+export interface ProfitabilityReport {
+  by_product: ProductProfit[];
+  scenarios: ScenarioComparison[];
+}
+
+export interface AIInsight {
+  type: 'risk' | 'warning' | 'opportunity' | 'action';
+  title: string;
+  description: string;
+  severity: 'high' | 'medium' | 'low';
+  product_id?: string;
+  material_id?: string;
+}

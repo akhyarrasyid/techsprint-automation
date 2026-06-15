@@ -6,7 +6,9 @@ import {
   ProductMRP,
   ProductProfitability,
   PipelineResults,
-  ValidationReport
+  ValidationReport,
+  ProfitabilityReport,
+  AIInsight
 } from './types';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:7860';
@@ -69,5 +71,17 @@ export async function runPipeline(scenario: string = 'Base'): Promise<PipelineRe
     body: JSON.stringify({ scenario }),
   });
   if (!res.ok) throw new Error('Failed to run pipeline execution');
+  return res.json();
+}
+
+export async function fetchProfitabilityReport(scenario: string = 'Base'): Promise<ProfitabilityReport> {
+  const res = await fetch(`${API_BASE_URL}/profitability?scenario=${encodeURIComponent(scenario)}`);
+  if (!res.ok) throw new Error('Failed to fetch profitability report');
+  return res.json();
+}
+
+export async function fetchInsights(scenario: string = 'Base'): Promise<AIInsight[]> {
+  const res = await fetch(`${API_BASE_URL}/insights?scenario=${encodeURIComponent(scenario)}`);
+  if (!res.ok) throw new Error('Failed to fetch AI insights');
   return res.json();
 }

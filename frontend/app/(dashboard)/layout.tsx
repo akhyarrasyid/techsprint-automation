@@ -39,6 +39,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       case 'mrp': return 'Material Requirements Planning';
       case 'profit': return 'Profitability Analysis';
       case 'upload': return 'Upload Sales History';
+      case 'copilot': return 'AI Copilot';
+      case 'digital-twin': return 'Digital Twin Simulator';
       default: return 'Business Planning System';
     }
   };

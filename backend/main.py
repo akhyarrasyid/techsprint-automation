@@ -13,7 +13,8 @@ from routers import (
     forecast_router,
     inventory_router,
     mrp_router,
-    profitability_router
+    profitability_router,
+    insights_router
 )
 from services.pipeline_store import PipelineStore
 
@@ -66,6 +67,7 @@ app.include_router(forecast_router.router)
 app.include_router(inventory_router.router)
 app.include_router(mrp_router.router)
 app.include_router(profitability_router.router)
+app.include_router(insights_router.router)
 
 if __name__ == "__main__":
     import uvicorn
