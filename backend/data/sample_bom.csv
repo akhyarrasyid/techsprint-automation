@@ -1,0 +1,12 @@
+product_id,material_id,material_name,qty_required,unit
+PRD001,RAW001,Gandum,1.0,kg
+PRD001,RAW002,Kemasan Plastik,1.0,pcs
+PRD002,RAW003,Tebu Raw,1.2,kg
+PRD002,RAW002,Kemasan Plastik,1.0,pcs
+PRD003,RAW004,Minyak Sawit Mentah,0.9,liter
+PRD003,RAW005,Botol Plastik,1.0,pcs
+PRD004,RAW001,Gandum,0.8,kg
+PRD004,RAW006,Bumbu Rempah,0.2,kg
+PRD004,RAW002,Kemasan Plastik,1.0,pcs
+PRD005,RAW007,Kelapa,2.0,pcs
+PRD005,RAW008,Kemasan Kotak,1.0,pcs

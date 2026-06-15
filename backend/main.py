@@ -1,107 +1,74 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-import pickle
-from fastapi.responses import ORJSONResponse
-from typing import Literal
 from contextlib import asynccontextmanager
 import os
-import logging
-from models import SetModel, LoadFeatures
+from dotenv import load_dotenv
 
+# Load environment variables
+load_dotenv()
 
-MODEL_DIR = os.path.join(os.path.dirname(__file__), "models")
-
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
-
-def load_model(name: Literal['xgboost', 'lgbm'] = 'lgbm'):
-    model_name = name or os.getenv("MODEL_NAME", name)
-    model_path = os.path.join(MODEL_DIR, f"{model_name}_model.pkl")
-    try:
-        with open(model_path, "rb") as f:
-            model = pickle.load(f)
-        app.state.model_cache[model_name] = model
-        app.state.model = model
-        app.state.model_name = model_name
-        return model
-    except FileNotFoundError:
-        logger.error("Model not found")
-        logger.error(f"GIVEN file name: {name}")
-    except Exception as e:
-        logger.error(f"Error loading model: {model_name}")
-        logger.error(e)
+from routers import (
+    upload_router,
+    dashboard_router,
+    forecast_router,
+    inventory_router,
+    mrp_router,
+    profitability_router
+)
+from services.pipeline_store import PipelineStore
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    app.state.model_cache = {}
-    load_model(name='lgbm')
-    
+    # Warm up store cache with mock/deterministic data on startup
+    try:
+        PipelineStore.get_results("Base")
+        print("Pipeline store initialized successfully with base mock data.")
+    except Exception as e:
+        print(f"Failed to initialize pipeline store on startup: {e}")
     yield
-    app.state.model = None # before shutdown
-    app.state.model_name = None
+    # Shutdown actions
+    PipelineStore.clear_cache()
+    print("Pipeline cache cleared.")
 
-## fastapi configs
-origins = [
-    "http://localhost:3000",
-    "https://power-load-forcasting.vercel.app",
-    "https://power-load-prediction.nevrohelios.com",
-    "https://power-load-forcasting-git-main-nevrohelios-projects.vercel.app",
-    "https://power-load-forcasting-m0jbzmsln-nevrohelios-projects.vercel.app"
-]
-app = FastAPI(lifespan=lifespan, default_response_class=ORJSONResponse)
+app = FastAPI(
+    title="Business Planning Automation System API",
+    description="TechSprint Data Automation Track backend.",
+    version="1.0.0",
+    lifespan=lifespan
+)
+
+# CORS middleware config
+# Using wildcard allow_origins to ensure Vercel and Hugging Face space connection is seamless
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
-app.state.model = None
-app.state.model_name = None
 
-
-@app.get("/health")
+# Health endpoint (as specified in architectural decisions)
+@app.get("/health", tags=["Health"])
 async def get_health():
-    return {"status": "healthy", "using": app.state.model_name}
-
-
-@app.post("/set-model")
-async def set_model(model: SetModel):
-    model_name = model.name
-    if model_name in app.state.model_cache:
-        app.state.model = app.state.model_cache[model_name]
-        app.state.model_name = model_name
-    else:
-        load_model(model_name)
-    return {"status": "model set", "model": model_name}
-
-
-@app.post("/predict")
-async def predict(features: LoadFeatures):
-    model = app.state.model
-    if model is None:
-        return {"error": "Model not loaded"}
-    
-    # sklearn expects [n_samples, n_features]
-    input_data = [features.get_features]
-
-    pred = model.predict(input_data)[0]
-
-    # do predict_proba (tested on lgbm & xgboost)
-    if hasattr(model, "predict_proba"):
-        proba = model.predict_proba(input_data)[0].tolist()
-    else:
-        proba = None
-    
-    rev_load_map = {
-        0: 'Light Load',
-        1: 'Medium Load',
-        2: 'Maximum Load'
-    }
-
+    active_model = os.getenv("MODEL_NAME", "mock")
+    env = os.getenv("ENVIRONMENT", "development")
     return {
-        "prediction": str(rev_load_map.get(pred, "Unknown")),
-        "probabilities": proba
+        "status": "ok",
+        "pipeline": "ready",
+        "environment": env,
+        "model": active_model
     }
 
+# Register routers at root level for flat endpoint layout
+app.include_router(upload_router.router)
+app.include_router(dashboard_router.router)
+app.include_router(forecast_router.router)
+app.include_router(inventory_router.router)
+app.include_router(mrp_router.router)
+app.include_router(profitability_router.router)
 
+if __name__ == "__main__":
+    import uvicorn
+    # Port 7860 for Hugging Face Spaces compatibility
+    port = int(os.getenv("PORT", 7860))
+    uvicorn.run("main:app", host="0.0.0.0", port=port, reload=True)

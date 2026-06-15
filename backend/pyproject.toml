@@ -21,4 +21,9 @@ dependencies = [
     "shap>=0.48.0",
     "uvicorn>=0.35.0",
     "xgboost>=3.0.3",
+    "python-dotenv>=1.0.1",
+    "python-multipart>=0.0.12",
+    "catboost>=1.2.7",
+    "onnxruntime>=1.20.0",
+    "torch>=2.2.0",
 ]
