@@ -1,0 +1,12 @@
+fastapi[standard]
+holidays
+lightgbm
+matplotlib
+numpy   
+pandas
+scikit-learn
+plotly
+seaborn
+xgboost
+uvicorn
+orjson
