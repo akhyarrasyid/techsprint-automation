@@ -151,24 +151,86 @@ def run_full_pipeline(df: pd.DataFrame, scenario_name: str = "Base") -> Dict[str
         })
         
     # 6. MRP (Material Requirements Planning - Nested Accordion Structure)
+    RAW_MATERIAL_STOCK = {
+        "RAW001": 900.0,
+        "RAW002": 2000.0,
+        "RAW003": 800.0,
+        "RAW004": 1500.0,
+        "RAW005": 1000.0,
+        "RAW006": 400.0,
+        "RAW007": 1200.0,
+        "RAW008": 600.0
+    }
+    RAW_MATERIAL_COST = {
+        "RAW001": 8500.0,
+        "RAW002": 500.0,
+        "RAW003": 6000.0,
+        "RAW004": 12000.0,
+        "RAW005": 1000.0,
+        "RAW006": 15000.0,
+        "RAW007": 3000.0,
+        "RAW008": 1500.0
+    }
+    RAW_MATERIAL_SUPPLIER = {
+        "RAW001": {"name": "UD Makmur", "lead_time": 4},
+        "RAW002": {"name": "PT KemasIndo", "lead_time": 2},
+        "RAW003": {"name": "PT AgroTebu", "lead_time": 5},
+        "RAW004": {"name": "PT SawitSejahtera", "lead_time": 6},
+        "RAW005": {"name": "PT PlastikMulia", "lead_time": 3},
+        "RAW006": {"name": "CV RempahNusantara", "lead_time": 4},
+        "RAW007": {"name": "UD KelapaIndah", "lead_time": 3},
+        "RAW008": {"name": "PT CartonBox", "lead_time": 3}
+    }
+    
     mrp_report = []
+    from datetime import datetime, timedelta
+    base_date = datetime(2026, 6, 15)
+    
     for prod_id in unique_products:
         recommended_order = recommended_orders_dict.get(prod_id, 0.0)
         materials = []
         if prod_id in BOM:
             for item in BOM[prod_id]:
-                # Calculate material unit cost scenario multiplier if applicable
-                qty_req = item["qty_required"] * recommended_order
+                mat_id = item["material_id"]
+                name = item["name"]
+                unit = item["unit"]
+                
+                needed = item["qty_required"] * recommended_order
+                stock = RAW_MATERIAL_STOCK.get(mat_id, 0.0)
+                shortage = max(0.0, needed - stock)
+                
+                unit_cost = RAW_MATERIAL_COST.get(mat_id, 0.0)
+                order_cost = shortage * unit_cost
+                
+                supp_info = RAW_MATERIAL_SUPPLIER.get(mat_id, {"name": "Supplier General", "lead_time": 3})
+                supplier_name = supp_info["name"]
+                
+                lead_time_days = supp_info["lead_time"]
+                if scenario_name == "Supplier Delay +5 hari":
+                    lead_time_days += 5
+                    
+                arrival_date = base_date + timedelta(days=lead_time_days)
+                arrival_str = arrival_date.strftime("%d %B %Y")
+                
                 materials.append({
-                    "material_id": item["material_id"],
-                    "material_name": item["name"],
-                    "qty_required": round(qty_req, 2),
-                    "unit": item["unit"]
+                    "material_id": mat_id,
+                    "material_name": name,
+                    "qty_required": round(needed, 2),
+                    "current_stock": round(stock, 2),
+                    "shortage": round(shortage, 2),
+                    "unit": unit,
+                    "unit_cost": unit_cost,
+                    "order_cost": round(order_cost, 2),
+                    "supplier": supplier_name,
+                    "lead_time": lead_time_days,
+                    "expected_arrival": arrival_str
                 })
+                
         mrp_report.append({
             "product_id": prod_id,
             "product_name": PRODUCTS.get(prod_id, f"Product {prod_id}"),
             "recommended_order": round(recommended_order, 2),
+            "production_qty": round(recommended_order, 2),
             "materials": materials
         })
         

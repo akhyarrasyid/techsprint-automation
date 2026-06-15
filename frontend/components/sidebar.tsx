@@ -20,7 +20,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => 
     { id: 'forecast', label: 'Forecast', icon: TrendingUp },
     { id: 'inventory', label: 'Inventory', icon: Package },
     { id: 'mrp', label: 'MRP', icon: Layers },
-    { id: 'profitability', label: 'Profitability', icon: DollarSign },
+    { id: 'profit', label: 'Profitability', icon: DollarSign },
     { id: 'upload', label: 'Upload Data', icon: UploadCloud },
   ];
 

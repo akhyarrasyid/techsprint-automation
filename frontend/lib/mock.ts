@@ -154,18 +154,68 @@ export const MOCK_MRP: ProductMRP[] = [
     product_id: "PRD001",
     product_name: "Tepung Protein Tinggi",
     recommended_order: 1215,
+    production_qty: 1215,
     materials: [
-      { material_id: "RAW001", material_name: "Gandum", qty_required: 1215, unit: "kg" },
-      { material_id: "RAW002", material_name: "Kemasan Plastik", qty_required: 1215, unit: "pcs" }
+      {
+        material_id: "RAW001",
+        material_name: "Gandum",
+        qty_required: 1215,
+        current_stock: 900,
+        shortage: 315,
+        unit: "kg",
+        unit_cost: 8500,
+        order_cost: 2677500,
+        supplier: "UD Makmur",
+        lead_time: 4,
+        expected_arrival: "19 June 2026"
+      },
+      {
+        material_id: "RAW002",
+        material_name: "Kemasan Plastik",
+        qty_required: 1215,
+        current_stock: 2000,
+        shortage: 0,
+        unit: "pcs",
+        unit_cost: 500,
+        order_cost: 0,
+        supplier: "PT KemasIndo",
+        lead_time: 2,
+        expected_arrival: "17 June 2026"
+      }
     ]
   },
   {
     product_id: "PRD002",
     product_name: "Tepung Protein Sedang",
     recommended_order: 1230,
+    production_qty: 1230,
     materials: [
-      { material_id: "RAW001", material_name: "Gandum", qty_required: 1230, unit: "kg" },
-      { material_id: "RAW002", material_name: "Kemasan Plastik", qty_required: 1230, unit: "pcs" }
+      {
+        material_id: "RAW001",
+        material_name: "Gandum",
+        qty_required: 1230,
+        current_stock: 900,
+        shortage: 330,
+        unit: "kg",
+        unit_cost: 8500,
+        order_cost: 2805000,
+        supplier: "UD Makmur",
+        lead_time: 4,
+        expected_arrival: "19 June 2026"
+      },
+      {
+        material_id: "RAW002",
+        material_name: "Kemasan Plastik",
+        qty_required: 1230,
+        current_stock: 2000,
+        shortage: 0,
+        unit: "pcs",
+        unit_cost: 500,
+        order_cost: 0,
+        supplier: "PT KemasIndo",
+        lead_time: 2,
+        expected_arrival: "17 June 2026"
+      }
     ]
   }
 ];

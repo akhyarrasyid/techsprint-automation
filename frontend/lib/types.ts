@@ -49,13 +49,21 @@ export interface RawMaterialRequirement {
   material_id: string;
   material_name: string;
   qty_required: number;
+  current_stock: number;
+  shortage: number;
   unit: string;
+  unit_cost: number;
+  order_cost: number;
+  supplier: string;
+  lead_time: number;
+  expected_arrival: string;
 }
 
 export interface ProductMRP {
   product_id: string;
   product_name: string;
   recommended_order: number;
+  production_qty?: number;
   materials: RawMaterialRequirement[];
 }
 
