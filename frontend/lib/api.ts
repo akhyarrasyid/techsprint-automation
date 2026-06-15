@@ -8,7 +8,8 @@ import {
   PipelineResults,
   ValidationReport,
   ProfitabilityReport,
-  AIInsight
+  AIInsight,
+  ExplainabilityReport
 } from './types';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:7860';
@@ -85,3 +86,10 @@ export async function fetchInsights(scenario: string = 'Base'): Promise<AIInsigh
   if (!res.ok) throw new Error('Failed to fetch AI insights');
   return res.json();
 }
+
+export async function fetchExplainability(): Promise<ExplainabilityReport> {
+  const res = await fetch(`${API_BASE_URL}/explainability`);
+  if (!res.ok) throw new Error('Failed to fetch explainability report');
+  return res.json();
+}
+

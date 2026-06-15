@@ -1,0 +1,2 @@
+# LightGBM Model File Placeholder
+# Actual model booster parameters will be trained/compiled in future pipeline stages.

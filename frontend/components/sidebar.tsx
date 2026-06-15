@@ -8,7 +8,8 @@ import {
   UploadCloud,
   Activity,
   Sparkles,
-  SlidersHorizontal
+  SlidersHorizontal,
+  Brain
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -26,6 +27,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => 
     { id: 'upload', label: 'Upload Data', icon: UploadCloud },
     { id: 'copilot', label: 'AI Copilot', icon: Sparkles },
     { id: 'digital-twin', label: 'Digital Twin', icon: SlidersHorizontal },
+    { id: 'explainability', label: 'Explainable AI', icon: Brain },
   ];
 
   return (

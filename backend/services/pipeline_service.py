@@ -20,6 +20,7 @@ from planning_engine import (
 )
 from services.validation_service import validate_sales_data
 from mock_data import TARGET_FORECASTS
+from services.model_loader import ModelLoader
 
 def run_full_pipeline(df: pd.DataFrame, scenario_name: str = "Base") -> Dict[str, Any]:
     """
@@ -53,8 +54,18 @@ def run_full_pipeline(df: pd.DataFrame, scenario_name: str = "Base") -> Dict[str
             
         latest_row = prod_df.iloc[-1]
         
-        # Get target 1st-week forecast
-        base_f = TARGET_FORECASTS.get(prod_id, float(latest_row["rolling_mean_7"] * 1.05 * 7))
+        # Get baseline week forecast
+        baseline_f = TARGET_FORECASTS.get(prod_id, float(latest_row["rolling_mean_7"] * 1.05 * 7))
+        
+        # Calculate ensemble prediction using features
+        feat_array = np.array([
+            latest_row.get("rolling_mean_7", 100.0),
+            latest_row.get("sales_qty", 100.0),
+            latest_row.get("unit_cost", 10.0),
+            latest_row.get("selling_price", 15.0),
+            latest_row.get("lead_time_days", 4.0)
+        ])
+        base_f = ModelLoader.predict_ensemble(feat_array, baseline_f)
         
         # Scenario multiplier for High Demand
         if scenario_name == "High Demand +20%":

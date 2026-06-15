@@ -127,3 +127,29 @@ export interface AIInsight {
   product_id?: string;
   material_id?: string;
 }
+
+export interface FeatureImportance {
+  feature: string;
+  importance: number;
+  description: string;
+}
+
+export interface SHAPValue {
+  feature: string;
+  shap_value: number;
+  effect: string;
+  description: string;
+}
+
+export interface WaterfallItem {
+  name: string;
+  value: number;
+  type: 'base' | 'positive' | 'negative' | 'total';
+}
+
+export interface ExplainabilityReport {
+  feature_importance: FeatureImportance[];
+  shap_values: SHAPValue[];
+  waterfall_data: WaterfallItem[];
+}
+

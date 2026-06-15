@@ -41,6 +41,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       case 'upload': return 'Upload Sales History';
       case 'copilot': return 'AI Copilot';
       case 'digital-twin': return 'Digital Twin Simulator';
+      case 'explainability': return 'Explainable AI';
       default: return 'Business Planning System';
     }
   };
