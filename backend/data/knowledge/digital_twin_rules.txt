@@ -1,0 +1,28 @@
+# Digital Twin Rules — Simulation & Scenario Modeling Knowledge Base
+
+## Digital Twin Concept
+Digital Twin adalah replika virtual dari operasi supply chain yang memungkinkan simulasi what-if tanpa risiko terhadap operasi nyata. Sistem ini memungkinkan planner melihat dampak perubahan parameter sebelum implementasi.
+
+## Demand Adjustment Simulation
+Parameter demand adjustment (-50% hingga +50%) mensimulasikan perubahan permintaan pasar. Kenaikan demand 20% meningkatkan revenue proporsional tetapi menurunkan service level jika safety stock tidak cukup. Penurunan demand 20% mengurangi revenue tetapi menaikkan service level dan menurunkan stockout risk.
+
+## Supplier Lead Time Simulation
+Peningkatan lead time dari 4 hari ke 9 hari (+5 hari) menurunkan service level sekitar 16% (dari 98% ke 82%). Setiap tambahan 1 hari lead time memerlukan peningkatan safety stock sekitar 12% untuk mempertahankan service level yang sama.
+
+## Material Cost Simulation
+Kenaikan biaya bahan baku 10% langsung mengurangi gross margin 6-7 percentage points. Pada skenario Raw Material +10%, margin turun dari 35.3% menjadi 28.8%. Dampak ini bisa dimitigasi dengan: (1) negosiasi harga, (2) substitusi material, (3) penyesuaian harga jual.
+
+## Selling Price Simulation
+Kenaikan harga jual 10% meningkatkan revenue 10% tetapi berpotensi menurunkan demand (price elasticity). Penurunan harga 10% meningkatkan volume tetapi mengurangi margin. Sweet spot biasanya ada pada kenaikan 3-5% yang masih ditoleransi pasar.
+
+## Monte Carlo Simulation
+Monte Carlo simulation menggunakan 1000 iterasi random sampling untuk menghitung probabilitas stockout. Variabel acak: daily_demand (normal distribution), lead_time (uniform distribution). Output: P(stockout) per produk, yang membantu menentukan safety stock optimal.
+
+## Service Level Sensitivity
+Service level sangat sensitif terhadap kombinasi high demand + long lead time. Skenario terburuk: demand +50% + lead time 14 hari bisa menurunkan service level ke 50%. Risk matrix: Low Risk (SL >= 95%), Medium Risk (85-95%), High Risk (< 85%).
+
+## Impact on Profitability
+Setiap 1% penurunan service level berpotensi menghilangkan revenue sebesar 1% × total_expected_revenue. Sebaliknya, overstock meningkatkan holding cost. Optimal point: service level 95-98% dengan holding cost terkendali.
+
+## Scenario Comparison Framework
+Saat membandingkan skenario, prioritaskan: (1) Gross Profit absolute, (2) Margin percentage, (3) Service Level, (4) Holding Cost. Skenario terbaik adalah yang memaksimalkan gross profit sambil mempertahankan service level >= 95%.

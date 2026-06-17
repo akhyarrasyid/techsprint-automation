@@ -1,0 +1,25 @@
+# MRP Rules — Material Requirements Planning Knowledge Base
+
+## Bill of Materials (BOM)
+BOM mendefinisikan komposisi material yang dibutuhkan untuk memproduksi satu unit produk jadi. Contoh: 1 unit Tepung Protein Tinggi membutuhkan 0.8 kg Gandum, 0.15 kg Additives, dan 0.05 kg Packaging. BOM bertingkat (multi-level) menunjukkan sub-assembly requirements.
+
+## MRP Calculation
+Gross Requirement = forecast_demand × BOM_ratio_per_unit. Net Requirement = max(0, gross_requirement - current_stock_material). Shortage terjadi jika net_requirement > 0. Setiap shortage harus ditangani dengan Purchase Order ke supplier terkait.
+
+## Material Shortage Analysis
+Shortage konsolidasi dilakukan per material_id, bukan per produk. Ini karena satu material bisa digunakan oleh beberapa produk (shared material). Contoh: Gandum digunakan oleh semua varian tepung. Total shortage Gandum = sum shortage dari PRD001 + PRD002 + PRD003.
+
+## Supplier Lead Time
+Lead time adalah waktu antara PO diterbitkan hingga material tiba di gudang. Lead time bervariasi per supplier: UD Makmur (4 hari), PT Cargill (5 hari), CV Gemilang (3 hari). Lead time yang lebih panjang membutuhkan safety stock material yang lebih besar.
+
+## Delivery Schedule Planning
+Delivery schedule harus mempertimbangkan: (1) tanggal PO release = hari ini, (2) expected delivery = PO release + lead_time, (3) production start = delivery date + 1 hari (quality check). Jika material terlambat, seluruh jadwal produksi bergeser.
+
+## Material Priority Classification
+Material diprioritaskan berdasarkan: (1) shortage severity (unit), (2) number of products affected, (3) supplier lead time. Material dengan shortage tertinggi dan lead time terpanjang mendapat prioritas PO pertama.
+
+## Lot Sizing
+Jumlah order harus memenuhi MOQ (Minimum Order Quantity) supplier. Jika shortage = 500 unit tapi MOQ = 1000 unit, maka PO harus 1000 unit. Kelebihan disimpan sebagai safety stock material.
+
+## MRP Nervousness
+Perubahan forecast yang sering menyebabkan MRP nervousness dimana PO berubah-ubah. Untuk mengurangi ini, digunakan time fence: perubahan dalam 1 minggu pertama di-freeze, hanya minggu 2-5 yang boleh diubah.

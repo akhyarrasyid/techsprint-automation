@@ -15,3 +15,11 @@ python-multipart
 catboost
 onnxruntime
 torch
+sentence-transformers
+faiss-cpu
+groq
+langchain-text-splitters
+cachetools
+PuLP
+psutil
+openpyxl

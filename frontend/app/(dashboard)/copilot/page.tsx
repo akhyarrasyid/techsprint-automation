@@ -1,21 +1,23 @@
 'use client';
 
-import React, { useState, useRef, useEffect, Suspense } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { safeInsights, safeProfitabilityReport, safeMRP, safeInventory, safeForecast } from '../../../lib/mock';
-import { AIInsight } from '../../../lib/types';
-import { Bot, Send, Sparkles, User, BarChart3, DollarSign, Truck } from 'lucide-react';
+import React, { useState, useRef, useEffect, Suspense, useCallback } from 'react';
+import { askCopilot, CopilotResponse } from '../../../lib/api';
+import { Bot, Send, Sparkles, User, BarChart3, DollarSign, Truck, Copy, Check, RotateCcw, ChevronDown, Zap, Trash2 } from 'lucide-react';
 
 interface ChatMessage {
   role: 'user' | 'assistant';
   content: string;
   timestamp: Date;
+  sources?: string[];
+  model?: string;
+  latency_ms?: number;
+  cached?: boolean;
 }
 
 const PRESET_QUESTIONS: Record<string, { icon: React.ElementType; label: string; questions: string[] }> = {
   operations: {
     icon: BarChart3,
-    label: 'Ask Operations',
+    label: 'Operations',
     questions: [
       'Produk mana yang harus saya restock minggu ini?',
       'Berapa total target produksi bulan ini?',
@@ -24,7 +26,7 @@ const PRESET_QUESTIONS: Record<string, { icon: React.ElementType; label: string;
   },
   finance: {
     icon: DollarSign,
-    label: 'Ask Finance',
+    label: 'Finance',
     questions: [
       'Bagaimana dampak kenaikan bahan baku 10%?',
       'Produk mana yang memiliki margin tertinggi?',
@@ -33,7 +35,7 @@ const PRESET_QUESTIONS: Record<string, { icon: React.ElementType; label: string;
   },
   supply_chain: {
     icon: Truck,
-    label: 'Ask Supply Chain',
+    label: 'Supply Chain',
     questions: [
       'Apa yang terjadi jika supplier terlambat 7 hari?',
       'Material mana yang mengalami shortage?',
@@ -42,136 +44,148 @@ const PRESET_QUESTIONS: Record<string, { icon: React.ElementType; label: string;
   }
 };
 
+function parseBold(text: string) {
+  const parts = text.split(/(\*\*.*?\*\*)/g);
+  return parts.map((part, idx) => {
+    if (part.startsWith('**') && part.endsWith('**')) {
+      return <strong key={idx} className="font-bold text-slate-900">{part.slice(2, -2)}</strong>;
+    }
+    return part;
+  });
+}
+
+function renderMarkdown(text: string) {
+  const lines = text.split('\n');
+  return lines.map((line, i) => {
+    if (line.startsWith('### ')) {
+      return <h5 key={i} className="text-xs font-bold text-slate-800 mt-2 mb-1">{line.replace('### ', '')}</h5>;
+    }
+    if (line.startsWith('## ')) {
+      return <h4 key={i} className="text-xs font-bold text-[#185FA5] mt-3 mb-1.5 border-b border-slate-100 pb-1">{line.replace('## ', '')}</h4>;
+    }
+    if (line.startsWith('# ')) {
+      return <h3 key={i} className="text-sm font-black text-slate-800 mt-4 mb-2">{line.replace('# ', '')}</h3>;
+    }
+    if (line.startsWith('- ') || line.startsWith('* ') || line.startsWith('• ')) {
+      const cleanLine = line.replace(/^[-*•]\s+/, '');
+      return (
+        <div key={i} className="flex items-start gap-1.5 ml-2 my-1">
+          <span className="text-[#185FA5] mt-1 shrink-0">•</span>
+          <span className="text-slate-600 text-xs">{parseBold(cleanLine)}</span>
+        </div>
+      );
+    }
+    if (line.trim() === '') {
+      return <div key={i} className="h-2" />;
+    }
+    return <p key={i} className="text-slate-600 text-xs mb-1 leading-relaxed">{parseBold(line)}</p>;
+  });
+}
+
 function CopilotContent() {
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       role: 'assistant',
-      content: 'Halo! Saya adalah AI Copilot untuk Business Planning Automation System. Saya bisa menjawab pertanyaan tentang **Operations**, **Finance**, dan **Supply Chain**. Silakan tanya atau pilih salah satu pertanyaan di bawah.',
-      timestamp: new Date()
+      content: 'Halo! Saya adalah **AI Supply Chain Copilot** yang didukung oleh **Llama 4 Scout + RAG**. Saya menggunakan knowledge base supply chain dan data bisnis real-time untuk menjawab pertanyaan Anda.\n\nSilakan tanya tentang **Operations**, **Finance**, atau **Supply Chain**.',
+      timestamp: new Date(),
+      model: 'llama-4-scout-17b',
     }
   ]);
   const [input, setInput] = useState('');
   const [isThinking, setIsThinking] = useState(false);
   const [activeTab, setActiveTab] = useState<string>('operations');
+  const [copiedIdx, setCopiedIdx] = useState<number | null>(null);
+  const [displayedText, setDisplayedText] = useState<Record<number, string>>({});
   const messagesEndRef = useRef<HTMLDivElement>(null);
-
-  const { data: insights } = useQuery({ queryKey: ['insights', 'Base'], queryFn: () => safeInsights('Base') });
-  const { data: profReport } = useQuery({ queryKey: ['profitability-report', 'Base'], queryFn: () => safeProfitabilityReport('Base') });
-  const { data: mrpData } = useQuery({ queryKey: ['mrp', 'Base'], queryFn: () => safeMRP('Base') });
-  const { data: inventoryData } = useQuery({ queryKey: ['inventory', 'Base'], queryFn: () => safeInventory('Base') });
-  const { data: forecastData } = useQuery({ queryKey: ['forecast', 'Base'], queryFn: () => safeForecast('Base') });
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+  }, [messages, displayedText]);
 
-  const generateResponse = (question: string): string => {
-    const q = question.toLowerCase();
-
-    // ── Operations answers ──
-    if (q.includes('restock') || q.includes('stock') && q.includes('minggu')) {
-      const critical = inventoryData?.filter(i => i.status.toLowerCase() !== 'healthy') || [];
-      if (critical.length === 0) return 'Semua produk saat ini berada di level stok aman. Tidak ada restock mendesak yang diperlukan minggu ini.';
-      const list = critical.map(i => `• **${i.product_name}**: stok ${i.current_stock.toLocaleString('id-ID')} unit (SS: ${i.safety_stock.toLocaleString('id-ID')}, ROP: ${i.reorder_point.toLocaleString('id-ID')}). Rekomendasi order: **${i.recommended_order.toLocaleString('id-ID')} unit**`).join('\n');
-      return `🔴 **${critical.length} produk perlu restock minggu ini:**\n\n${list}\n\nDisarankan segera membuat Purchase Order untuk mengamankan jadwal produksi.`;
-    }
-
-    if (q.includes('target produksi') || q.includes('produksi')) {
-      const total = forecastData?.reduce((s, f) => s + f.forecast_next_week, 0) || 0;
-      return `📊 **Target produksi minggu depan:** ${total.toLocaleString('id-ID')} unit\n\nBreakdown:\n${forecastData?.map(f => `• ${f.product_name}: **${f.forecast_next_week.toLocaleString('id-ID')}** unit`).join('\n') || 'Data tidak tersedia'}`;
-    }
-
-    if (q.includes('stockout') || q.includes('risiko')) {
-      const risks = insights?.filter(i => i.type === 'risk') || [];
-      if (risks.length === 0) return '✅ Tidak ada produk yang terdeteksi berisiko stockout saat ini.';
-      return `⚠️ **${risks.length} risiko stockout terdeteksi:**\n\n${risks.map(r => `• **${r.title}**\n  ${r.description}`).join('\n\n')}`;
-    }
-
-    // ── Finance answers ──
-    if (q.includes('bahan baku') && (q.includes('10%') || q.includes('naik'))) {
-      const base = profReport?.scenarios?.find(s => s.name === 'Base');
-      const rawUp = profReport?.scenarios?.find(s => s.name === 'Raw Material +10%');
-      if (base && rawUp) {
-        const profitDrop = base.gross_profit - rawUp.gross_profit;
-        const marginDrop = base.margin_pct - rawUp.margin_pct;
-        return `💰 **Dampak kenaikan bahan baku +10%:**\n\n• Gross Profit turun: **Rp ${profitDrop.toLocaleString('id-ID')}** (dari Rp ${base.gross_profit.toLocaleString('id-ID')} → Rp ${rawUp.gross_profit.toLocaleString('id-ID')})\n• Margin turun: **${marginDrop.toFixed(1)}%** (dari ${base.margin_pct}% → ${rawUp.margin_pct}%)\n• Service Level tetap: **${rawUp.service_level}%**\n\n📋 Rekomendasi: negosiasi kontrak jangka panjang dengan supplier utama atau cari alternatif bahan baku.`;
+  // Typing effect for last assistant message
+  const animateTyping = useCallback((idx: number, fullText: string) => {
+    let charIndex = 0;
+    const interval = setInterval(() => {
+      charIndex += 4; // Fast rendering speed
+      if (charIndex >= fullText.length) {
+        setDisplayedText(prev => ({ ...prev, [idx]: fullText }));
+        clearInterval(interval);
+      } else {
+        setDisplayedText(prev => ({ ...prev, [idx]: fullText.slice(0, charIndex) }));
       }
-    }
+    }, 8);
+    return () => clearInterval(interval);
+  }, []);
 
-    if (q.includes('margin') && q.includes('tinggi')) {
-      const products = [...(profReport?.by_product || [])].sort((a, b) => b.margin_pct - a.margin_pct);
-      if (products.length === 0) return 'Data profitabilitas belum tersedia.';
-      const top = products[0];
-      return `🏆 **Produk dengan margin tertinggi:** ${top.product_name}\n\n• Margin: **${top.margin_pct}%**\n• Revenue: Rp ${top.revenue.toLocaleString('id-ID')}\n• Gross Profit: **Rp ${top.gross_profit.toLocaleString('id-ID')}**\n\n📊 Ranking margin seluruh produk:\n${products.map((p, i) => `${i + 1}. ${p.product_name}: **${p.margin_pct}%**`).join('\n')}`;
-    }
-
-    if (q.includes('revenue') || q.includes('pendapatan')) {
-      const base = profReport?.scenarios?.find(s => s.name === 'Base');
-      return `💵 **Estimasi total revenue:** Rp ${(base?.total_revenue || 0).toLocaleString('id-ID')}\n\n• Total COGS: Rp ${(base?.total_cogs || 0).toLocaleString('id-ID')}\n• Gross Profit: **Rp ${(base?.gross_profit || 0).toLocaleString('id-ID')}**\n• Margin: **${base?.margin_pct || 0}%**`;
-    }
-
-    // ── Supply Chain answers ──
-    if (q.includes('supplier') && (q.includes('terlambat') || q.includes('delay'))) {
-      const base = profReport?.scenarios?.find(s => s.name === 'Base');
-      const delay = profReport?.scenarios?.find(s => s.name === 'Supplier Delay +5 hari');
-      if (base && delay) {
-        const profitDrop = base.gross_profit - delay.gross_profit;
-        return `🚚 **Dampak keterlambatan supplier +5 hari:**\n\n• Service Level: **${base.service_level}% → ${delay.service_level}%** (turun ${base.service_level - delay.service_level}%)\n• Gross Profit: turun **Rp ${profitDrop.toLocaleString('id-ID')}**\n• Holding Cost: naik **Rp ${(delay.holding_cost - base.holding_cost).toLocaleString('id-ID')}**\n\n📋 Rekomendasi:\n• Tingkatkan safety stock untuk produk dengan lead time > 4 hari\n• Negosiasi penalty clause dengan supplier\n• Pertimbangkan dual-sourcing untuk material kritis`;
-      }
-    }
-
-    if (q.includes('shortage') || q.includes('material') && q.includes('kurang')) {
-      const shortages: string[] = [];
-      mrpData?.forEach(prod => {
-        prod.materials.forEach(mat => {
-          if (mat.shortage > 0) {
-            shortages.push(`• **${mat.material_name}** (${mat.material_id}): shortage ${mat.shortage.toLocaleString('id-ID')} ${mat.unit} — Supplier: ${mat.supplier} (Lead Time: ${mat.lead_time} hari)`);
-          }
-        });
-      });
-      if (shortages.length === 0) return '✅ Tidak ada material yang mengalami shortage saat ini.';
-      return `📦 **Material yang mengalami shortage:**\n\n${shortages.join('\n')}\n\nDisarankan segera mengirimkan Purchase Order ke supplier terkait.`;
-    }
-
-    if (q.includes('lead time') || q.includes('rata-rata')) {
-      const leadTimes: number[] = [];
-      mrpData?.forEach(prod => {
-        prod.materials.forEach(mat => {
-          leadTimes.push(mat.lead_time);
-        });
-      });
-      if (leadTimes.length === 0) return 'Data lead time belum tersedia.';
-      const avg = leadTimes.reduce((s, v) => s + v, 0) / leadTimes.length;
-      const max = Math.max(...leadTimes);
-      const min = Math.min(...leadTimes);
-      return `⏱️ **Statistik Lead Time Supplier:**\n\n• Rata-rata: **${avg.toFixed(1)} hari**\n• Minimum: **${min} hari**\n• Maximum: **${max} hari**\n\n⚠️ Material dengan lead time > 4 hari memerlukan safety stock lebih tinggi.`;
-    }
-
-    // ── Fallback ──
-    const relevantInsights = insights?.slice(0, 3) || [];
-    if (relevantInsights.length > 0) {
-      return `🤖 Saya belum memiliki jawaban spesifik untuk pertanyaan tersebut, tetapi berikut insight terkini:\n\n${relevantInsights.map(i => `• **${i.title}**: ${i.description}`).join('\n\n')}\n\nCoba tanyakan tentang stok, revenue, margin, supplier, atau material shortage.`;
-    }
-
-    return '🤖 Maaf, saya belum dapat menjawab pertanyaan tersebut. Coba tanyakan tentang:\n• Produk yang perlu restock\n• Dampak kenaikan bahan baku\n• Risiko keterlambatan supplier\n• Material shortage';
-  };
-
-  const handleSend = (question?: string) => {
+  const handleSend = async (question?: string) => {
     const q = question || input.trim();
-    if (!q) return;
+    if (!q || isThinking) return;
 
     const userMsg: ChatMessage = { role: 'user', content: q, timestamp: new Date() };
     setMessages(prev => [...prev, userMsg]);
     setInput('');
     setIsThinking(true);
 
-    // Simulate 800ms thinking delay
-    setTimeout(() => {
-      const response = generateResponse(q);
-      const assistantMsg: ChatMessage = { role: 'assistant', content: response, timestamp: new Date() };
-      setMessages(prev => [...prev, assistantMsg]);
+    try {
+      const response: CopilotResponse = await askCopilot(q);
+      const assistantMsg: ChatMessage = {
+        role: 'assistant',
+        content: response.answer,
+        timestamp: new Date(),
+        sources: response.sources,
+        model: response.model,
+        latency_ms: response.latency_ms,
+        cached: response.cached,
+      };
+      setMessages(prev => {
+        const newMessages = [...prev, assistantMsg];
+        const newIdx = newMessages.length - 1;
+        animateTyping(newIdx, response.answer);
+        return newMessages;
+      });
+    } catch {
+      const errorMsg: ChatMessage = {
+        role: 'assistant',
+        content: '⚠️ Gagal terhubung ke server. Pastikan backend berjalan dan GROQ_API_KEY dikonfigurasi.',
+        timestamp: new Date(),
+        model: 'error',
+      };
+      setMessages(prev => [...prev, errorMsg]);
+    } finally {
       setIsThinking(false);
-    }, 800);
+    }
+  };
+
+  const handleRegenerate = () => {
+    const lastUserMsg = [...messages].reverse().find(m => m.role === 'user');
+    if (lastUserMsg) {
+      setMessages(prev => {
+        const newMsgs = [...prev];
+        if (newMsgs.length > 0 && newMsgs[newMsgs.length - 1].role === 'assistant') {
+          newMsgs.pop();
+        }
+        return newMsgs;
+      });
+      handleSend(lastUserMsg.content);
+    }
+  };
+
+  const handleCopy = (text: string, idx: number) => {
+    navigator.clipboard.writeText(text);
+    setCopiedIdx(idx);
+    setTimeout(() => setCopiedIdx(null), 2000);
+  };
+
+  const handleClearChat = () => {
+    setMessages([
+      {
+        role: 'assistant',
+        content: 'Halo! Saya adalah **AI Supply Chain Copilot** yang didukung oleh **Llama 4 Scout + RAG**. Saya menggunakan knowledge base supply chain dan data bisnis real-time untuk menjawab pertanyaan Anda.\n\nSilakan tanya tentang **Operations**, **Finance**, atau **Supply Chain**.',
+        timestamp: new Date(),
+        model: 'llama-4-scout-17b',
+      }
+    ]);
+    setDisplayedText({});
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -185,16 +199,30 @@ function CopilotContent() {
 
   return (
     <div className="flex flex-col h-[calc(100vh-130px)]">
-      <div className="flex flex-col mb-4">
-        <h2 className="text-xl font-bold text-slate-800 tracking-tight flex items-center gap-2">
-          <Sparkles className="w-5 h-5 text-[#185FA5]" />
-          AI Copilot
-        </h2>
-        <p className="text-xs text-slate-400 font-semibold mt-0.5">Tanya apapun tentang operasi, keuangan, dan rantai pasok bisnis Anda</p>
+      <div className="flex justify-between items-start mb-4">
+        <div>
+          <h2 className="text-xl font-bold text-slate-800 tracking-tight flex items-center gap-2">
+            <Sparkles className="w-5 h-5 text-[#185FA5]" />
+            AI Copilot
+            <span className="ml-2 px-2 py-0.5 bg-[#185FA5]/10 text-[#185FA5] text-[9px] font-black rounded-full uppercase tracking-wider">
+              RAG + Llama 4 Scout
+            </span>
+          </h2>
+          <p className="text-xs text-slate-400 font-semibold mt-0.5">
+            Retrieval-Augmented Generation dengan FAISS knowledge base dan data pipeline real-time
+          </p>
+        </div>
+        <button
+          onClick={handleClearChat}
+          className="flex items-center gap-1.5 px-3 py-2 bg-slate-50 border border-slate-100 hover:bg-slate-100 rounded-xl text-slate-500 text-xs font-bold transition-all"
+        >
+          <Trash2 className="w-3.5 h-3.5" />
+          Clear Chat
+        </button>
       </div>
 
       {/* Tab Switcher */}
-      <div className="flex gap-2 mb-4">
+      <div className="flex gap-2 mb-3">
         {Object.entries(PRESET_QUESTIONS).map(([key, val]) => {
           const Icon = val.icon;
           return (
@@ -215,12 +243,13 @@ function CopilotContent() {
       </div>
 
       {/* Preset Questions */}
-      <div className="flex gap-2 mb-4 overflow-x-auto">
+      <div className="flex gap-2 mb-3 overflow-x-auto">
         {tab.questions.map((q, idx) => (
           <button
             key={idx}
             onClick={() => handleSend(q)}
-            className="shrink-0 px-3 py-2 bg-white border border-slate-100 rounded-xl text-[11px] font-semibold text-slate-600 hover:bg-[#185FA5]/5 hover:border-[#185FA5]/20 hover:text-[#185FA5] transition-all duration-150"
+            disabled={isThinking}
+            className="shrink-0 px-3 py-2 bg-white border border-slate-100 rounded-xl text-[11px] font-semibold text-slate-600 hover:bg-[#185FA5]/5 hover:border-[#185FA5]/20 hover:text-[#185FA5] transition-all duration-150 disabled:opacity-40"
           >
             {q}
           </button>
@@ -231,24 +260,75 @@ function CopilotContent() {
       <div className="flex-1 bg-white border border-slate-100 rounded-[20px] shadow-sm overflow-hidden flex flex-col">
         {/* Messages */}
         <div className="flex-1 overflow-y-auto p-6 space-y-4">
-          {messages.map((msg, idx) => (
-            <div key={idx} className={`flex gap-3 ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}>
-              <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
-                msg.role === 'assistant'
-                  ? 'bg-[#185FA5]/10 text-[#185FA5]'
-                  : 'bg-slate-100 text-slate-500'
-              }`}>
-                {msg.role === 'assistant' ? <Bot className="w-4 h-4" /> : <User className="w-4 h-4" />}
+          {messages.map((msg, idx) => {
+            const isAssistant = msg.role === 'assistant';
+            const showText = isAssistant && displayedText[idx] !== undefined
+              ? displayedText[idx]
+              : msg.content;
+
+            return (
+              <div key={idx} className={`flex gap-3 ${!isAssistant ? 'flex-row-reverse' : ''}`}>
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
+                  isAssistant
+                    ? 'bg-[#185FA5]/10 text-[#185FA5]'
+                    : 'bg-slate-100 text-slate-500'
+                }`}>
+                  {isAssistant ? <Bot className="w-4 h-4" /> : <User className="w-4 h-4" />}
+                </div>
+                <div className="max-w-[78%] flex flex-col gap-1.5">
+                  <div className={`px-4 py-3 rounded-2xl text-xs leading-relaxed font-medium ${
+                    isAssistant
+                      ? 'bg-slate-50 text-slate-700 rounded-tl-md'
+                      : 'bg-[#185FA5] text-white rounded-tr-md'
+                  }`}>
+                    {isAssistant ? renderMarkdown(showText) : showText}
+                  </div>
+
+                  {/* Assistant message metadata */}
+                  {isAssistant && msg.model && (
+                    <div className="flex items-center gap-2 flex-wrap">
+                      {/* Model badge */}
+                      <span className="px-1.5 py-0.5 bg-[#185FA5]/8 text-[#185FA5] text-[8px] font-black rounded uppercase tracking-wider flex items-center gap-0.5">
+                        <Zap className="w-2.5 h-2.5" />
+                        {msg.model}
+                      </span>
+                      {msg.latency_ms && (
+                        <span className="text-[8px] text-slate-400 font-bold">{msg.latency_ms}ms</span>
+                      )}
+                      {msg.cached && (
+                        <span className="text-[8px] text-[#1D9E75] font-bold">CACHED</span>
+                      )}
+                      {/* Copy button */}
+                      <button
+                        onClick={() => handleCopy(msg.content, idx)}
+                        className="p-0.5 hover:bg-slate-100 rounded transition-colors"
+                        title="Copy"
+                      >
+                        {copiedIdx === idx ? <Check className="w-3 h-3 text-[#1D9E75]" /> : <Copy className="w-3 h-3 text-slate-400" />}
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Sources */}
+                  {isAssistant && msg.sources && msg.sources.length > 0 && (
+                    <details className="mt-1">
+                      <summary className="text-[9px] text-slate-400 font-bold cursor-pointer flex items-center gap-1 hover:text-[#185FA5]">
+                        <ChevronDown className="w-3 h-3" />
+                        {msg.sources.length} sources used
+                      </summary>
+                      <div className="mt-1 space-y-1">
+                        {msg.sources.map((src, si) => (
+                          <div key={si} className="px-2 py-1.5 bg-slate-50 border border-slate-100 rounded-lg text-[9px] text-slate-500 font-medium leading-relaxed">
+                            {src.slice(0, 200)}{src.length > 200 ? '…' : ''}
+                          </div>
+                        ))}
+                      </div>
+                    </details>
+                  )}
+                </div>
               </div>
-              <div className={`max-w-[75%] px-4 py-3 rounded-2xl text-xs leading-relaxed font-medium whitespace-pre-wrap ${
-                msg.role === 'assistant'
-                  ? 'bg-slate-50 text-slate-700 rounded-tl-md'
-                  : 'bg-[#185FA5] text-white rounded-tr-md'
-              }`}>
-                {msg.content}
-              </div>
-            </div>
-          ))}
+            );
+          })}
 
           {isThinking && (
             <div className="flex gap-3">
@@ -256,10 +336,13 @@ function CopilotContent() {
                 <Bot className="w-4 h-4" />
               </div>
               <div className="bg-slate-50 px-4 py-3 rounded-2xl rounded-tl-md">
-                <div className="flex gap-1">
-                  <div className="w-2 h-2 rounded-full bg-slate-300 animate-bounce" style={{ animationDelay: '0ms' }}></div>
-                  <div className="w-2 h-2 rounded-full bg-slate-300 animate-bounce" style={{ animationDelay: '150ms' }}></div>
-                  <div className="w-2 h-2 rounded-full bg-slate-300 animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                <div className="flex items-center gap-2">
+                  <div className="flex gap-1">
+                    <div className="w-2 h-2 rounded-full bg-[#185FA5]/40 animate-bounce" style={{ animationDelay: '0ms' }}></div>
+                    <div className="w-2 h-2 rounded-full bg-[#185FA5]/40 animate-bounce" style={{ animationDelay: '150ms' }}></div>
+                    <div className="w-2 h-2 rounded-full bg-[#185FA5]/40 animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                  </div>
+                  <span className="text-[9px] text-slate-400 font-bold">RAG retrieving + LLM generating...</span>
                 </div>
               </div>
             </div>
@@ -276,8 +359,17 @@ function CopilotContent() {
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="Tanya tentang operasi, keuangan, atau supply chain..."
-            className="flex-1 bg-slate-50 border border-slate-100 rounded-xl px-4 py-3 text-xs font-medium text-slate-700 placeholder-slate-400 outline-none focus:border-[#185FA5]/30 focus:ring-2 focus:ring-[#185FA5]/10 transition-all"
+            disabled={isThinking}
+            className="flex-1 bg-slate-50 border border-slate-100 rounded-xl px-4 py-3 text-xs font-medium text-slate-700 placeholder-slate-400 outline-none focus:border-[#185FA5]/30 focus:ring-2 focus:ring-[#185FA5]/10 transition-all disabled:opacity-40"
           />
+          <button
+            onClick={handleRegenerate}
+            disabled={isThinking || messages.length < 2}
+            className="px-3 py-3 bg-slate-100 text-slate-500 rounded-xl hover:bg-slate-200 disabled:opacity-30 transition-all duration-150"
+            title="Regenerate"
+          >
+            <RotateCcw className="w-3.5 h-3.5" />
+          </button>
           <button
             onClick={() => handleSend()}
             disabled={!input.trim() || isThinking}

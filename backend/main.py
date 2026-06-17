@@ -15,7 +15,19 @@ from routers import (
     mrp_router,
     profitability_router,
     insights_router,
-    explainability_router
+    explainability_router,
+    copilot_router,
+    digital_twin_router,
+    optimization_router,
+    kpi_router,
+    anomaly_router,
+    command_center_router,
+    model_monitoring_router,
+    observability_router,
+    export_router,
+    audit_router,
+    data_quality_router,
+    mlops_router,
 )
 from services.pipeline_store import PipelineStore
 
@@ -35,7 +47,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title="Business Planning Automation System API",
     description="TechSprint Data Automation Track backend.",
-    version="1.0.0",
+    version="3.0.0",
     lifespan=lifespan
 )
 
@@ -70,6 +82,19 @@ app.include_router(mrp_router.router)
 app.include_router(profitability_router.router)
 app.include_router(insights_router.router)
 app.include_router(explainability_router.router)
+app.include_router(copilot_router.router)
+app.include_router(digital_twin_router.router)
+app.include_router(optimization_router.router)
+# Phase 13-25 routers
+app.include_router(kpi_router.router)
+app.include_router(anomaly_router.router)
+app.include_router(command_center_router.router)
+app.include_router(model_monitoring_router.router)
+app.include_router(observability_router.router)
+app.include_router(export_router.router)
+app.include_router(audit_router.router)
+app.include_router(data_quality_router.router)
+app.include_router(mlops_router.router)
 
 if __name__ == "__main__":
     import uvicorn

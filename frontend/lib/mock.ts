@@ -21,7 +21,15 @@ import {
   fetchInsights,
   fetchExplainability,
   uploadSalesCSV,
-  runPipeline
+  runPipeline,
+  fetchKPI,
+  fetchAnomalies,
+  fetchCommandCenter,
+  fetchModelMonitoring,
+  fetchObservability,
+  fetchAuditTrail,
+  fetchDataQuality,
+  fetchMLOps
 } from './api';
 
 // Realistic Fallback Datasets (SAP IBP / Power BI Inspired)
@@ -407,3 +415,208 @@ export async function safeExplainability(): Promise<ExplainabilityReport> {
     return MOCK_EXPLAINABILITY_REPORT;
   }
 }
+
+// ── MOCK KPI DATA ──
+const MOCK_KPI = {
+  service_level: 94.2,
+  fill_rate: 96.5,
+  forecast_accuracy: 82.4,
+  inventory_turnover: 7.2,
+  supplier_reliability: 89.1,
+  gross_margin: 28.5,
+  net_margin: 8.9,
+  stockout_probability: 0.08,
+  product_kpis: [
+    { product_id: "prod_001", product_name: "Kopi Kita Blend", service_level: 95.8, stockout_probability: 0.04, days_coverage: 14, margin_pct: 32.5, trend_pct: 4.2 },
+    { product_id: "prod_002", product_name: "Espresso Premium", service_level: 93.1, stockout_probability: 0.12, days_coverage: 9, margin_pct: 28.1, trend_pct: -1.5 },
+    { product_id: "prod_003", product_name: "Robusta Gold", service_level: 96.5, stockout_probability: 0.02, days_coverage: 21, margin_pct: 35.0, trend_pct: 6.8 },
+    { product_id: "prod_004", product_name: "Arabica Special", service_level: 91.4, stockout_probability: 0.18, days_coverage: 6, margin_pct: 25.4, trend_pct: -3.1 },
+  ]
+};
+
+export async function safeKPI(scenario: string = 'Base') {
+  try {
+    return await fetchKPI(scenario);
+  } catch (error) {
+    console.warn('API fetch failed, falling back to mock KPI:', error);
+    return MOCK_KPI;
+  }
+}
+
+// ── MOCK ANOMALIES DATA ──
+const MOCK_ANOMALIES = {
+  summary: { total_anomalies: 3, high_severity: 1, medium_severity: 1, low_severity: 1 },
+  anomalies: [
+    { type: "demand_spike", title: "Lonjakan Permintaan Mendadak", severity: "high", description: "Permintaan Kopi Kita Blend naik 45% di atas standar historis.", z_score: 3.4, confidence: 0.95 },
+    { type: "stock_critical", title: "Stok Kritis Arabica Special", severity: "medium", description: "Persediaan stok di gudang utama tersisa 6 hari, di bawah batas aman ROP.", z_score: 2.1, confidence: 0.88 },
+    { type: "supplier_anomaly", title: "Keterlambatan Supplier Biji Kopi", severity: "low", description: "Lead time pengiriman dari Supplier Java Gold naik menjadi 10 hari.", z_score: 1.8, confidence: 0.82 }
+  ]
+};
+
+export async function safeAnomalies(scenario: string = 'Base') {
+  try {
+    return await fetchAnomalies(scenario);
+  } catch (error) {
+    console.warn('API fetch failed, falling back to mock anomalies:', error);
+    return MOCK_ANOMALIES;
+  }
+}
+
+// ── MOCK COMMAND CENTER ──
+const MOCK_COMMAND_CENTER = {
+  global_kpis: [
+    { id: "sl", label: "Service Level", value: 94.2, unit: "%", target: 95.0, status: "warning" },
+    { id: "fr", label: "Fill Rate", value: 96.5, unit: "%", target: 97.0, status: "warning" },
+    { id: "gm", label: "Gross Margin", value: 28.5, unit: "%", target: 30.0, status: "warning" },
+  ],
+  financial_summary: {
+    total_revenue: 1250000000,
+    total_cogs: 893750000,
+    gross_margin: 28.5,
+    net_margin: 8.9,
+  },
+  risk_map: [
+    { severity: "high", title: "Risiko Stockout Kopi Arabica", description: "Permintaan melonjak saat stok menipis berpotensi menyebabkan loss-sales Rp 120jt." },
+    { severity: "medium", title: "Efisiensi Logistik Rendah", description: "Rute pengiriman vendor kurang optimal meningkatkan biaya COGS sebesar 2%." }
+  ],
+  recommendations: [
+    { title: "Lakukan Pemesanan Darurat", description: "Segera order 500kg biji kopi Arabica dari Supplier Alternatif untuk mencegah stockout.", impact: "high", effort: "low" },
+    { title: "Naikkan Harga Sementara 5%", description: "Gunakan pricing strategy elastisitas untuk meredam lonjakan permintaan berlebih.", impact: "medium", effort: "low" }
+  ],
+  priority_actions: [
+    { severity: "high", title: "Panggil Supplier Java Gold", description: "Negosiasi percepatan pengiriman PO #88931." }
+  ]
+};
+
+export async function safeCommandCenter(scenario: string = 'Base') {
+  try {
+    return await fetchCommandCenter(scenario);
+  } catch (error) {
+    console.warn('API fetch failed, falling back to mock command center:', error);
+    return MOCK_COMMAND_CENTER;
+  }
+}
+
+// ── MOCK MODEL MONITORING ──
+const MOCK_MODEL_MONITORING = {
+  last_check: new Date().toISOString(),
+  accuracy_trend: [
+    { week: "W1", mape: 14.8 },
+    { week: "W2", mape: 13.9 },
+    { week: "W3", mape: 12.8 },
+    { week: "W4", mape: 12.3 },
+  ],
+  models: [
+    { name: "LightGBM Predictor", status: "champion", version: "2.1", weight: 0.4, mape: 12.3 },
+    { name: "CatBoost Model", status: "challenger", version: "1.3", weight: 0.3, mape: 13.1 },
+    { name: "Neural Network (ONNX)", status: "challenger", version: "1.0", weight: 0.3, mape: 14.2 },
+  ],
+  shap_drift: [
+    { feature: "lag_7", drift_pct: 4.2 },
+    { feature: "selling_price", drift_pct: 1.8 },
+    { feature: "promotion", drift_pct: 0.5 },
+  ]
+};
+
+export async function safeModelMonitoring() {
+  try {
+    return await fetchModelMonitoring();
+  } catch (error) {
+    console.warn('API fetch failed, falling back to mock model monitoring:', error);
+    return MOCK_MODEL_MONITORING;
+  }
+}
+
+// ── MOCK OBSERVABILITY ──
+const MOCK_OBSERVABILITY = {
+  system: { cpu_percent: 12.5, memory_percent: 62.1, memory_used_mb: 4980, memory_total_mb: 8000 },
+  endpoint_summary: { health_pct: 100, operational: 20, total: 20 },
+  services: { groq_llm: "configured", hf_space: "active", pipeline: "loaded", faiss_index: "loaded" },
+  endpoints: [
+    { method: "GET", path: "/health", status: "200 OK" },
+    { method: "POST", path: "/predict", status: "200 OK" },
+    { method: "GET", path: "/kpi", status: "200 OK" },
+    { method: "GET", path: "/anomalies", status: "200 OK" },
+    { method: "GET", path: "/command-center", status: "200 OK" },
+  ]
+};
+
+export async function safeObservability() {
+  try {
+    return await fetchObservability();
+  } catch (error) {
+    console.warn('API fetch failed, falling back to mock observability:', error);
+    return MOCK_OBSERVABILITY;
+  }
+}
+
+// ── MOCK AUDIT TRAIL ──
+const MOCK_AUDIT_TRAIL = {
+  stats: { total_entries: 42, categories: { "scenario_management": 15, "forecast": 12, "upload": 8 } },
+  entries: [
+    { timestamp: new Date().toISOString(), user: "admin@kopikita.id", category: "scenario_management", action: "Create Scenario", details: { name: "Promo 101", parent: "Base" } },
+    { timestamp: new Date(Date.now() - 3600000).toISOString(), user: "system", category: "forecast", action: "Retrain LGBM Model", details: { mape_improvement: "0.8%" } },
+    { timestamp: new Date(Date.now() - 7200000).toISOString(), user: "analyst@kopikita.id", category: "upload", action: "Upload sales_history.csv", details: { rows: 2450 } }
+  ]
+};
+
+export async function safeAuditTrail(limit: number = 50) {
+  try {
+    return await fetchAuditTrail(limit);
+  } catch (error) {
+    console.warn('API fetch failed, falling back to mock audit trail:', error);
+    return MOCK_AUDIT_TRAIL;
+  }
+}
+
+// ── MOCK DATA QUALITY ──
+const MOCK_DATA_QUALITY = {
+  quality_score: 95.8,
+  grade: "A",
+  row_count: 2450,
+  column_count: 7,
+  product_count: 4,
+  summary: { pass: 5, warning: 1, fail: 0, info: 1 },
+  checks: [
+    { check: "Missing Values", status: "pass", detail: "0 missing values (0.00%)", severity: "low" },
+    { check: "Duplicate Rows", status: "pass", detail: "0 duplicate rows (0.00%)", severity: "low" },
+    { check: "Outliers (Sales)", status: "info", detail: "3 outlier data points in sales_qty", severity: "low" },
+    { check: "Schema Validation", status: "pass", detail: "All required columns present", severity: "low" },
+    { check: "Negative Values", status: "warning", detail: "1 negative value found in current_stock", severity: "medium" },
+    { check: "Date Range", status: "pass", detail: "Date range: 2026-01-01 to 2026-06-10", severity: "low" },
+  ]
+};
+
+export async function safeDataQuality(scenario: string = 'Base') {
+  try {
+    return await fetchDataQuality(scenario);
+  } catch (error) {
+    console.warn('API fetch failed, falling back to mock data quality:', error);
+    return MOCK_DATA_QUALITY;
+  }
+}
+
+// ── MOCK MLOPS ──
+const MOCK_MLOPS = {
+  summary: { total_models: 3, total_experiments: 12, best_mape: 12.3, last_training: "2026-06-15T09:00:00Z" },
+  model_registry: [
+    { model_id: "lgbm-v2.1", name: "LightGBM", version: "2.1", framework: "LightGBM", status: "champion", metrics: { mape: 12.3, r2: 0.89 }, training_samples: 4500 },
+    { model_id: "catboost-v1.3", name: "CatBoost", version: "1.3", framework: "CatBoost", status: "challenger", metrics: { mape: 13.1, r2: 0.87 }, training_samples: 4500 },
+    { model_id: "nn-onnx-v1.0", name: "Neural Network (ONNX)", version: "1.0", framework: "PyTorch", status: "challenger", metrics: { mape: 14.2, r2: 0.85 }, training_samples: 4500 }
+  ],
+  experiments: [
+    { id: "exp-001", name: "Baseline LightGBM", date: "2026-06-01", model: "LightGBM", mape: 15.8 },
+    { id: "exp-002", name: "Feature Engineering v2", date: "2026-06-08", model: "LightGBM", mape: 13.5 },
+    { id: "exp-003", name: "Ensemble (LGB+CB+NN)", date: "2026-06-15", model: "Ensemble", mape: 12.3 }
+  ]
+};
+
+export async function safeMLOps() {
+  try {
+    return await fetchMLOps();
+  } catch (error) {
+    console.warn('API fetch failed, falling back to mock MLOps:', error);
+    return MOCK_MLOPS;
+  }
+}
+

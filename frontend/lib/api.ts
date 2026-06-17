@@ -93,3 +93,107 @@ export async function fetchExplainability(): Promise<ExplainabilityReport> {
   return res.json();
 }
 
+export interface CopilotResponse {
+  answer: string;
+  sources: string[];
+  model: string;
+  latency_ms: number;
+  cached: boolean;
+}
+
+export async function askCopilot(question: string, scenario: string = 'Base'): Promise<CopilotResponse> {
+  const res = await fetch(`${API_BASE_URL}/copilot/ask`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ question, scenario }),
+  });
+  if (!res.ok) throw new Error('Failed to ask copilot');
+  return res.json();
+}
+
+export async function simulateDigitalTwin(params: {
+  supplier_delay?: number;
+  demand_change_pct?: number;
+  stock_reduction_pct?: number;
+  num_runs?: number;
+}) {
+  const res = await fetch(`${API_BASE_URL}/digital-twin/simulate`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(params),
+  });
+  if (!res.ok) throw new Error('Failed to run simulation');
+  return res.json();
+}
+
+export async function fetchOptimization(budget?: number, warehouseCapacity?: number) {
+  const params = new URLSearchParams();
+  if (budget) params.set('budget', budget.toString());
+  if (warehouseCapacity) params.set('warehouse_capacity', warehouseCapacity.toString());
+  const res = await fetch(`${API_BASE_URL}/optimization?${params.toString()}`);
+  if (!res.ok) throw new Error('Failed to fetch optimization');
+  return res.json();
+}
+
+// ── Phase 15: KPI ──
+export async function fetchKPI(scenario: string = 'Base') {
+  const res = await fetch(`${API_BASE_URL}/kpi?scenario=${encodeURIComponent(scenario)}`);
+  if (!res.ok) throw new Error('Failed to fetch KPI');
+  return res.json();
+}
+
+// ── Phase 16: Anomalies ──
+export async function fetchAnomalies(scenario: string = 'Base') {
+  const res = await fetch(`${API_BASE_URL}/anomalies?scenario=${encodeURIComponent(scenario)}`);
+  if (!res.ok) throw new Error('Failed to fetch anomalies');
+  return res.json();
+}
+
+// ── Phase 19: Command Center ──
+export async function fetchCommandCenter(scenario: string = 'Base') {
+  const res = await fetch(`${API_BASE_URL}/command-center?scenario=${encodeURIComponent(scenario)}`);
+  if (!res.ok) throw new Error('Failed to fetch command center');
+  return res.json();
+}
+
+// ── Phase 20: Model Monitoring ──
+export async function fetchModelMonitoring() {
+  const res = await fetch(`${API_BASE_URL}/model-monitoring`);
+  if (!res.ok) throw new Error('Failed to fetch model monitoring');
+  return res.json();
+}
+
+// ── Phase 21: Observability ──
+export async function fetchObservability() {
+  const res = await fetch(`${API_BASE_URL}/observability`);
+  if (!res.ok) throw new Error('Failed to fetch observability');
+  return res.json();
+}
+
+// ── Phase 22: Export ──
+export async function fetchExport(format: string, scenario: string = 'Base') {
+  const res = await fetch(`${API_BASE_URL}/export/${format}?scenario=${encodeURIComponent(scenario)}`);
+  if (!res.ok) throw new Error('Failed to export');
+  return res;
+}
+
+// ── Phase 23: Audit Trail ──
+export async function fetchAuditTrail(limit: number = 50) {
+  const res = await fetch(`${API_BASE_URL}/audit-trail?limit=${limit}`);
+  if (!res.ok) throw new Error('Failed to fetch audit trail');
+  return res.json();
+}
+
+// ── Phase 24: Data Quality ──
+export async function fetchDataQuality(scenario: string = 'Base') {
+  const res = await fetch(`${API_BASE_URL}/data-quality?scenario=${encodeURIComponent(scenario)}`);
+  if (!res.ok) throw new Error('Failed to fetch data quality');
+  return res.json();
+}
+
+// ── Phase 25: MLOps ──
+export async function fetchMLOps() {
+  const res = await fetch(`${API_BASE_URL}/mlops`);
+  if (!res.ok) throw new Error('Failed to fetch MLOps');
+  return res.json();
+}

@@ -1,0 +1,22 @@
+# Forecast Rules — Demand Forecasting Knowledge Base
+
+## Moving Average
+Moving Average (MA) adalah metode peramalan yang menggunakan rata-rata data historis untuk memproyeksikan permintaan masa depan. Dalam sistem ini, digunakan rolling_mean_7 yaitu rata-rata bergerak 7 hari untuk menangkap pola weekly seasonality. Jika rolling_mean_7 naik secara konsisten selama 3 minggu berturut-turut, ini mengindikasikan tren kenaikan permintaan (uptrend).
+
+## Trend Analysis
+Trend percentage (trend_pct) dihitung sebagai perubahan persentase antara forecast minggu pertama (forecast_next_week) dan forecast minggu kelima (forecast_w28). Trend positif di atas 5% menandakan demand growth yang signifikan. Trend negatif di bawah -5% menandakan demand decline yang memerlukan penyesuaian produksi.
+
+## Confidence Interval
+Confidence interval memberikan rentang ketidakpastian pada setiap titik forecast. Batas bawah dihitung sebagai forecast * 0.92 (8% di bawah) dan batas atas sebagai forecast * 1.08 (8% di atas). Ini membantu planner dalam membuat keputusan safety stock yang proporsional terhadap ketidakpastian permintaan.
+
+## Lag Features
+Fitur lag_7 (penjualan 7 hari yang lalu) merupakan prediktor terkuat dalam model LightGBM dengan importance 35.4%. Ini menunjukkan bahwa pola permintaan minggu lalu adalah indikator paling andal untuk minggu depan, mengkonfirmasi weekly seasonality yang kuat pada produk tepung dan premix.
+
+## Forecast Horizon
+Sistem melakukan peramalan 5 minggu ke depan (W24-W28) dengan projection multiplier bertahap: W1 (base), W2 (+5%), W3 (+3%), W4 (+2.5%), W5 (+2.5%). Multiplier ini mencerminkan tren pertumbuhan organik moderat yang umum pada industri bahan makanan.
+
+## Ensemble Model
+Sistem menggunakan ensemble 3 model: LightGBM (40% weight), CatBoost (30% weight), dan Neural Network ONNX (30% weight). Ensemble terbukti lebih robust dibanding single model karena mengurangi variance dan overfitting.
+
+## Seasonal Pattern
+Produk tepung dan premix menunjukkan pola musiman terkait hari raya (Lebaran, Natal). Permintaan bisa melonjak 30-50% pada 2 minggu sebelum hari raya. Planner harus memperhitungkan ini dalam safety stock planning.

@@ -31,19 +31,25 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     router.push(`${pathname}?scenario=${encodeURIComponent(scen)}`);
   };
 
-  const getTitle = () => {
-    switch (activeTab) {
-      case 'dashboard': return 'Executive Dashboard';
-      case 'forecast': return 'Demand Forecasting';
-      case 'inventory': return 'Inventory Planning';
-      case 'mrp': return 'Material Requirements Planning';
-      case 'profit': return 'Profitability Analysis';
-      case 'upload': return 'Upload Sales History';
-      case 'copilot': return 'AI Copilot';
-      case 'digital-twin': return 'Digital Twin Simulator';
-      case 'explainability': return 'Explainable AI';
-      default: return 'Business Planning System';
-    }
+  const titles: Record<string, string> = {
+    'dashboard': 'Executive Dashboard',
+    'forecast': 'Demand Forecasting',
+    'inventory': 'Inventory Planning',
+    'mrp': 'Material Requirements Planning',
+    'profit': 'Profitability Analysis',
+    'upload': 'Upload Sales History',
+    'copilot': 'AI Copilot',
+    'digital-twin': 'Digital Twin Simulator',
+    'explainability': 'Explainable AI',
+    'kpi': 'KPI Engine',
+    'anomalies': 'Anomaly Detection',
+    'command-center': 'Executive Command Center',
+    'model-monitoring': 'Model Monitoring',
+    'observability': 'Enterprise Observability',
+    'export': 'Export Center',
+    'audit': 'Audit Trail',
+    'data-quality': 'Data Quality Center',
+    'mlops': 'MLOps Foundation',
   };
 
   return (
@@ -53,7 +59,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
       {/* Main Content Pane */}
       <div className="pl-[220px] flex flex-col min-h-screen">
-        <Topbar title={getTitle()} scenario={scenario} setScenario={setScenario} />
+        <Topbar title={titles[activeTab] || 'Business Planning System'} scenario={scenario} setScenario={setScenario} />
         <main className="p-8 flex-1">
           {children}
         </main>

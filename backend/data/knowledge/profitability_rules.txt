@@ -1,0 +1,29 @@
+# Profitability Rules — Financial Analysis Knowledge Base
+
+## Revenue Calculation
+Revenue dihitung sebagai: total_revenue = sum(forecast_demand × selling_price) untuk semua produk. Revenue projection menggunakan base scenario forecast. Variasi revenue antar skenario disebabkan perubahan volume demand, bukan harga.
+
+## Cost of Goods Sold (COGS)
+COGS = sum(forecast_demand × unit_cost) untuk semua produk. Unit cost mencakup: bahan baku, tenaga kerja langsung, dan overhead produksi. Perubahan harga bahan baku 10% langsung meningkatkan COGS sebesar 6-8% (tergantung komposisi BOM).
+
+## Gross Profit dan Margin
+Gross Profit = Revenue - COGS. Gross Margin = (Gross Profit / Revenue) × 100%. Margin di atas 35% dianggap sehat untuk industri bahan makanan. Margin di bawah 25% memerlukan review harga jual atau efisiensi produksi.
+
+## Scenario Analysis
+Sistem membandingkan 4 skenario bisnis:
+1. Base: kondisi normal tanpa perubahan parameter.
+2. High Demand +20%: permintaan naik 20%, revenue naik tapi service level turun.
+3. Supplier Delay +5 hari: lead time bertambah 5 hari, holding cost naik, service level turun.
+4. Raw Material +10%: biaya bahan baku naik 10%, margin tergerus tapi revenue tetap.
+
+## Service Level Impact
+Service level mengukur persentase permintaan yang dapat dipenuhi dari stok. Target service level = 98%. Setiap penurunan 1% service level berarti potential lost sales. High Demand scenario dapat menurunkan service level ke 80% jika safety stock tidak disesuaikan.
+
+## Break-Even Analysis
+Break-even point = Fixed Costs / (Selling Price - Variable Cost per unit). Produk di bawah break-even harus direview: naikkan harga, kurangi cost, atau diskontinyu.
+
+## Product Mix Optimization
+Tidak semua produk memiliki margin sama. Tepung Protein Tinggi (36.7% margin) lebih menguntungkan dari Premix Donat (33.3%). Optimasi product mix dapat meningkatkan total profit 5-10% tanpa menambah kapasitas.
+
+## Holding Cost in Profitability
+Holding cost = 15% × average_inventory_value per tahun. Overstock menambah holding cost dan mengurangi profit. Supplier delay scenario meningkatkan holding cost karena safety stock harus diperbesar.

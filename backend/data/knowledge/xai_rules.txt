@@ -1,0 +1,31 @@
+# XAI Rules — Explainable AI Knowledge Base
+
+## SHAP (SHapley Additive exPlanations)
+SHAP values mengukur kontribusi setiap fitur terhadap prediksi model berdasarkan teori permainan kooperatif (Shapley values). SHAP value positif menunjukkan fitur tersebut meningkatkan prediksi (mendorong ke arah demand lebih tinggi), sedangkan SHAP value negatif menunjukkan fitur tersebut menurunkan prediksi. Kelebihan SHAP: konsisten secara matematis, local interpretability (per-prediksi), dan global interpretability (agregat).
+
+## Feature Importance
+Feature importance menunjukkan seberapa besar pengaruh setiap variabel input terhadap akurasi prediksi model. Dalam model LightGBM BPAS, urutan feature importance: lag_7 (35.4%), rolling_mean_7 (24.8%), promotion (18.2%), selling_price (12.1%), current_stock (9.5%). Fitur lag_7 dominan karena pola permintaan produk tepung memiliki weekly seasonality yang kuat.
+
+## Waterfall Plot
+Waterfall plot menunjukkan decision path model dari base value ke final prediction. Base value adalah rata-rata prediksi model pada seluruh dataset training. Setiap fitur memberikan kontribusi positif atau negatif terhadap prediksi. Contoh path: Base Value (1150 unit) → +120 (lag_7) → +60 (rolling_mean_7) → +95 (promotion) → -35 (selling_price) → -10 (current_stock) → Final Prediction (1380 unit).
+
+## Model Confidence
+Model confidence diukur berdasarkan variance prediksi antar model dalam ensemble. Jika ketiga model (LightGBM, CatBoost, Neural Network) menghasilkan prediksi serupa (low variance), confidence tinggi. Jika prediksi berselisih signifikan (high variance), confidence rendah dan planner harus menggunakan range (confidence interval) alih-alih point estimate. Confidence threshold: high (variance < 5%), medium (5-15%), low (>15%).
+
+## Prediction Drift Detection
+Prediction drift terjadi ketika distribusi output model berubah signifikan dari waktu ke waktu. Monitoring menggunakan Population Stability Index (PSI): PSI < 0.1 = stabil, 0.1-0.25 = moderate drift (perlu monitoring ketat), >0.25 = significant drift (perlu retrain). Drift biasanya disebabkan oleh perubahan pola permintaan (musiman, tren pasar baru).
+
+## Data Drift Detection
+Data drift terjadi ketika distribusi fitur input berubah dari distribusi training data. Diukur dengan KL-divergence atau PSI per fitur. Jika lag_7 atau rolling_mean_7 mengalami drift signifikan, model harus di-retrain dengan data terbaru. Monitoring data drift sebaiknya dilakukan mingguan untuk produk fast-moving.
+
+## Feature Interaction Effects
+Beberapa fitur memiliki interaction effect yang tidak terlihat dari importance individual. Contoh: promotion × selling_price memiliki interaction negatif (promosi lebih efektif pada produk harga tinggi). Rolling_mean_7 × lag_7 menunjukkan apakah tren konsisten atau ada anomali. Interaction effects dianalisis menggunakan SHAP interaction values.
+
+## Local vs Global Interpretability
+Local interpretability menjelaskan satu prediksi spesifik (mengapa model memprediksi 1380 unit untuk Tepung Protein pada minggu ini). Global interpretability menjelaskan perilaku model secara keseluruhan (fitur apa yang paling penting secara umum). BPAS menggunakan keduanya: waterfall plot untuk local, feature importance chart untuk global.
+
+## Model Comparison Transparency
+Ensemble model terdiri dari 3 komponen: LightGBM (weight 40%), CatBoost (weight 30%), dan Neural Network ONNX (weight 30%). Jika terjadi disagreement antar model, sistem menampilkan rentang prediksi (min-max dari ketiga model) sebagai uncertainty indicator. Ini membantu decision maker memahami tingkat keyakinan prediksi.
+
+## Counterfactual Explanations
+Counterfactual explanation menjawab pertanyaan "apa yang harus berubah agar prediksi berubah?" Contoh: "Jika promotion diaktifkan (0→1), prediksi demand naik dari 1150 menjadi 1380 unit (+20%)." Ini membantu planner membuat keputusan interventional: apakah menjalankan promosi akan menghasilkan peningkatan demand yang cukup signifikan.

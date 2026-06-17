@@ -1,0 +1,25 @@
+# Supplier Rules — Procurement & Supplier Management Knowledge Base
+
+## Supplier Database
+Sistem mencatat informasi supplier: nama, lead time, MOQ, reliability score, dan material yang disuplai. Supplier utama: UD Makmur (Gandum, 4 hari), PT Cargill (Minyak Sawit, 5 hari), CV Gemilang (Packaging, 3 hari), PT Indotama (Additives, 4 hari), PT Agri Nusa (Tebu Raw, 6 hari).
+
+## Lead Time Management
+Lead time terdiri dari: order processing (1 hari) + transit time (2-4 hari) + receiving inspection (0.5 hari). Total lead time menentukan kapan PO harus diterbitkan. Rule: PO release date = required date - lead_time - 1 hari buffer.
+
+## Supplier Risk Assessment
+Risiko supplier diukur berdasarkan: (1) Historical on-time delivery rate, (2) Quality rejection rate, (3) Financial stability. Supplier dengan on-time rate < 90% memerlukan dual-sourcing strategy.
+
+## Dual Sourcing Strategy
+Untuk material kritis (Gandum, Minyak Sawit), direkomendasikan memiliki minimal 2 supplier aktif. Alokasi: 70% ke primary supplier, 30% ke secondary supplier. Ini mengurangi risiko supply disruption.
+
+## Purchase Order Optimization
+PO harus mempertimbangkan: (1) MOQ supplier, (2) Quantity discount brackets, (3) Kapasitas gudang, (4) Cash flow availability. Konsolidasi PO dari beberapa produk ke supplier yang sama untuk mendapatkan volume discount.
+
+## Supplier Performance Monitoring
+KPI supplier: (1) On-time delivery rate (target > 95%), (2) Quality acceptance rate (target > 98%), (3) Price competitiveness, (4) Responsiveness. Review quarterly dan renegosiasi kontrak annual.
+
+## Contract Negotiation
+Kontrak jangka panjang (6-12 bulan) memberikan price lock protection terhadap fluktuasi harga bahan baku. Penalty clause untuk keterlambatan: 1% dari nilai PO per hari keterlambatan, maksimum 10%.
+
+## Emergency Procurement
+Jika terjadi stockout atau supplier failure, emergency procurement dari spot market dengan markup 15-25%. Ini harus menjadi last resort karena sangat mahal. Lebih baik investasi di safety stock.

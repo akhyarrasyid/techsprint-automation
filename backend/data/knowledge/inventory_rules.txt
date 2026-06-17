@@ -1,0 +1,27 @@
+# Inventory Rules — Inventory Planning Knowledge Base
+
+## Safety Stock
+Safety Stock (SS) dihitung dengan rumus: SS = (max_daily_demand - avg_daily_demand) × lead_time_days. Safety stock bertindak sebagai buffer terhadap variabilitas permintaan dan ketidakpastian lead time supplier. Produk dengan demand volatility tinggi membutuhkan safety stock lebih besar.
+
+## Reorder Point (ROP)
+Reorder Point dihitung sebagai: ROP = (avg_daily_demand × lead_time_days) + safety_stock. Ketika current_stock turun di bawah ROP, sistem harus segera membuat Purchase Order. Jika stok di bawah safety stock, status berubah menjadi "Critical" dan memerlukan tindakan segera.
+
+## Economic Order Quantity (EOQ)
+EOQ menghitung jumlah pesanan optimal yang meminimalkan total biaya (ordering cost + holding cost). Dalam praktiknya, EOQ dimodifikasi oleh Minimum Order Quantity (MOQ) supplier dan kapasitas gudang. Holding cost diasumsikan 15% per tahun dari nilai persediaan.
+
+## Inventory Status Classification
+- Healthy: current_stock > ROP. Stok aman, tidak perlu tindakan.
+- Warning / Below ROP: current_stock berada antara safety_stock dan ROP. Disarankan membuat PO.
+- Critical: current_stock < safety_stock. Risiko stockout tinggi, PO harus diterbitkan hari ini.
+
+## Stockout Risk Assessment
+Risiko stockout diukur berdasarkan days_of_coverage = current_stock / avg_daily_demand. Jika days_of_coverage < lead_time, maka produk dijamin akan stockout sebelum shipment berikutnya tiba. Setiap stockout berpotensi menghilangkan revenue sebesar selling_price × lost_demand.
+
+## Recommended Order Calculation
+Recommended order = max(0, ROP + safety_stock - current_stock). Ini menjamin stok kembali ke level optimal setelah pengiriman tiba. Order juga harus mempertimbangkan MOQ supplier dan kelipatan pallet.
+
+## Holding Cost Impact
+Biaya penyimpanan (holding cost) mencakup: biaya gudang, asuransi, kerusakan, dan opportunity cost of capital. Pada umumnya holding cost berkisar 15-25% dari nilai persediaan per tahun. Overstock sama berbahayanya dengan stockout karena mengikat modal kerja.
+
+## ABC Analysis
+Produk dikategorikan berdasarkan kontribusi revenue: A (80% revenue, 20% SKU), B (15% revenue, 30% SKU), C (5% revenue, 50% SKU). Produk kategori A mendapat prioritas safety stock tertinggi.
