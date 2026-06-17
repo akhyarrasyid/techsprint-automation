@@ -8,7 +8,6 @@ from dotenv import load_dotenv
 load_dotenv()
 
 from routers import (
-    upload_router,
     dashboard_router,
     forecast_router,
     inventory_router,
@@ -22,12 +21,6 @@ from routers import (
     kpi_router,
     anomaly_router,
     command_center_router,
-    model_monitoring_router,
-    observability_router,
-    export_router,
-    audit_router,
-    data_quality_router,
-    mlops_router,
 )
 from services.pipeline_store import PipelineStore
 
@@ -74,7 +67,6 @@ async def get_health():
     }
 
 # Register routers at root level for flat endpoint layout
-app.include_router(upload_router.router)
 app.include_router(dashboard_router.router)
 app.include_router(forecast_router.router)
 app.include_router(inventory_router.router)
@@ -89,12 +81,6 @@ app.include_router(optimization_router.router)
 app.include_router(kpi_router.router)
 app.include_router(anomaly_router.router)
 app.include_router(command_center_router.router)
-app.include_router(model_monitoring_router.router)
-app.include_router(observability_router.router)
-app.include_router(export_router.router)
-app.include_router(audit_router.router)
-app.include_router(data_quality_router.router)
-app.include_router(mlops_router.router)
 
 if __name__ == "__main__":
     import uvicorn

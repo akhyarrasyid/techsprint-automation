@@ -37,19 +37,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     'inventory': 'Inventory Planning',
     'mrp': 'Material Requirements Planning',
     'profit': 'Profitability Analysis',
-    'upload': 'Upload Sales History',
     'copilot': 'AI Copilot',
     'digital-twin': 'Digital Twin Simulator',
     'explainability': 'Explainable AI',
     'kpi': 'KPI Engine',
     'anomalies': 'Anomaly Detection',
     'command-center': 'Executive Command Center',
-    'model-monitoring': 'Model Monitoring',
-    'observability': 'Enterprise Observability',
-    'export': 'Export Center',
-    'audit': 'Audit Trail',
-    'data-quality': 'Data Quality Center',
-    'mlops': 'MLOps Foundation',
   };
 
   return (

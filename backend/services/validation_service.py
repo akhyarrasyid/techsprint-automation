@@ -2,20 +2,16 @@ import pandas as pd
 from typing import Dict, Any, List
 
 REQUIRED_COLUMNS = [
-    "date",
-    "product_id",
-    "sales_qty",
-    "current_stock",
-    "selling_price",
-    "unit_cost",
-    "lead_time_days",
-    "promotion"
+    "Transaction_ID",
+    "DateTime",
+    "Menu_ID",
+    "Quantity"
 ]
 
 def validate_sales_data(df: pd.DataFrame) -> Dict[str, Any]:
     """
-    Validates the input sales DataFrame and returns a comprehensive report.
-    Raises ValueError if critical columns are missing.
+    Validates the real sales history dataset.
+    Checks for required columns, nulls, negative quantities, and suspicious entries.
     """
     # Check for required columns
     missing_cols = [col for col in REQUIRED_COLUMNS if col not in df.columns]
@@ -26,15 +22,15 @@ def validate_sales_data(df: pd.DataFrame) -> Dict[str, Any]:
     
     # Convert date to datetime safely
     df_temp = df.copy()
-    df_temp["date"] = pd.to_datetime(df_temp["date"])
+    df_temp["Parsed_DateTime"] = pd.to_datetime(df_temp["DateTime"], errors='coerce')
     
-    # Unique products
-    unique_products = df_temp["product_id"].unique().tolist()
-    product_count = len(unique_products)
+    # Unique Menu items
+    unique_menus = df_temp["Menu_ID"].dropna().unique().tolist()
+    menu_count = len(unique_menus)
     
     # Date range
-    min_date = df_temp["date"].min()
-    max_date = df_temp["date"].max()
+    min_date = df_temp["Parsed_DateTime"].min()
+    max_date = df_temp["Parsed_DateTime"].max()
     
     start_str = min_date.strftime("%Y-%m-%d") if not pd.isnull(min_date) else "N/A"
     end_str = max_date.strftime("%Y-%m-%d") if not pd.isnull(max_date) else "N/A"
@@ -45,24 +41,32 @@ def validate_sales_data(df: pd.DataFrame) -> Dict[str, Any]:
     # Warning checks
     warnings = []
     
-    # Warning 1: Check history duration for each product (< 30 days)
-    for prod_id in unique_products:
-        prod_df = df_temp[df_temp["product_id"] == prod_id]
-        if len(prod_df) > 0:
-            days_history = (prod_df["date"].max() - prod_df["date"].min()).days + 1
-            if days_history < 30:
-                warnings.append(f"{prod_id} memiliki history kurang dari 30 hari ({days_history} hari)")
+    # Warning 1: Check history duration for each Menu Item (< 30 days)
+    for menu_id in unique_menus:
+        menu_df = df_temp[df_temp["Menu_ID"] == menu_id]
+        if len(menu_df) > 0:
+            valid_dates = menu_df["Parsed_DateTime"].dropna()
+            if not valid_dates.empty:
+                days_history = (valid_dates.max() - valid_dates.min()).days + 1
+                if days_history < 30:
+                    warnings.append(f"{menu_id} memiliki history kurang dari 30 hari ({days_history} hari)")
                 
-    # Warning 2: Check for negative values in quantity, stock, price, etc.
-    numeric_cols = ["sales_qty", "current_stock", "selling_price", "unit_cost"]
-    for col in numeric_cols:
-        negative_count = int((df_temp[col] < 0).sum())
-        if negative_count > 0:
-            warnings.append(f"Kolom '{col}' mengandung {negative_count} nilai negatif")
+    # Warning 2: Check for negative/zero/suspicious values in Quantity
+    negative_qty = int((df_temp["Quantity"] < 0).sum())
+    if negative_qty > 0:
+        warnings.append(f"Kolom 'Quantity' mengandung {negative_qty} nilai negatif")
+        
+    zero_qty = int((df_temp["Quantity"] == 0).sum())
+    if zero_qty > 0:
+        warnings.append(f"Kolom 'Quantity' mengandung {zero_qty} nilai nol")
+        
+    suspicious_qty = int(df_temp["Quantity"].isin([99, 150]).sum())
+    if suspicious_qty > 0:
+        warnings.append(f"Kolom 'Quantity' mengandung {suspicious_qty} baris kuantitas mencurigakan (99 atau 150)")
             
     return {
         "row_count": row_count,
-        "product_count": product_count,
+        "product_count": menu_count,
         "date_range": {
             "start": start_str,
             "end": end_str

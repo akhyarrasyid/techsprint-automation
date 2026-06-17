@@ -1,5 +1,1 @@
-{
-  "lgbm": 0.4,
-  "catboost": 0.3,
-  "nn": 0.3
-}
+{"lgbm": 0.4, "catboost": 0.3, "nn": 0.3}

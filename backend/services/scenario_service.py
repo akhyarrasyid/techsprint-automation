@@ -39,15 +39,13 @@ def _calculate_service_level(inventory: List[Dict]) -> float:
 
 
 def _calculate_holding_cost(inventory: List[Dict]) -> float:
-    """Rough holding cost = sum(current_stock * 0.15 * unit_cost_proxy)."""
+    """Rough holding cost = sum(current_stock * 0.15 * unit_cost)."""
     total = 0.0
-    unit_cost_proxy = {
-        "PRD001": 9500, "PRD002": 11500, "PRD003": 14000,
-        "PRD004": 8000, "PRD005": 7000
-    }
+    from services.pipeline_service import INGREDIENT_DETAILS
     for item in inventory:
         pid = item.get("product_id", "")
-        cost = unit_cost_proxy.get(pid, 9500)
+        details = INGREDIENT_DETAILS.get(pid, {})
+        cost = details.get("unit_cost", 100.0)
         stock = item.get("current_stock", 0)
         total += stock * 0.15 * cost  # 15% annual holding cost
     return round(total, 2)

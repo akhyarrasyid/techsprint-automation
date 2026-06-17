@@ -12,3 +12,19 @@ wheels/
 # Local environment configuration files
 backend/.env
 frontend/.env.local
+
+# Large raw datasets
+backend/dataset/sales_history (Competitors).csv
+backend/dataset/sales_history_fixed.csv
+backend/dataset/warehouse_stock (Competitors).json
+backend/dataset/warehouse_stock.csv
+backend/dataset/Action_Report.csv
+backend/dataset/Case Study - Data Automation competition.pdf
+backend/dataset/Employee (Competitors).json
+backend/dataset/Employee.csv
+backend/dataset/Recipe_BOM (Competitors).json
+backend/dataset/Recipe_BOM.csv
+backend/dataset/Master_Inventory (Competitors).csv
+backend/Action_Report.csv
+backend/catboost_info/
+backend/logs/

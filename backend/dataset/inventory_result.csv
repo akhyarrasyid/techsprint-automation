@@ -1,0 +1,43 @@
+product_id,product_name,current_stock,safety_stock,reorder_point,forecast_demand_7d,target_stock_level,recommended_order,recommended_order_qty,estimated_cost,status,uom,supplier_uom,supplier,category
+INV-0001,Espresso Bean Arabica,32540.4,36232.42,138480.37,178732.98,317213.35,284672.95,284672.95,42700942.76,critical,gram,Kilogram,PT Gayo Kopi Utama,Coffee Bean
+INV-0002,Robusta Bean,24000.0,6.6,46.6,70.0,116.6,0.0,0.0,0.0,healthy,gram,Kilogram,PT Gayo Kopi Utama,Coffee Bean
+INV-0003,Decaf Bean,12000.0,6.6,46.6,70.0,116.6,0.0,0.0,0.0,healthy,gram,Kilogram,PT Gayo Kopi Utama,Coffee Bean
+INV-0004,Fresh Milk,160018.5,207061.76,632450.38,1487397.4,2119847.78,1959829.28,1959829.28,29397439.2,critical,ml,Liter,PT Indomilk Industri,Dairy
+INV-0005,Oat Milk,48000.0,4.67,24.67,70.0,94.67,0.0,0.0,0.0,healthy,ml,Liter,PT Indomilk Industri,Dairy Alt
+INV-0006,Almond Milk,40000.0,4.67,24.67,70.0,94.67,0.0,0.0,0.0,healthy,ml,Liter,PT Indomilk Industri,Dairy Alt
+INV-0007,Condensed Milk,76800.0,4.67,24.67,70.0,94.67,0.0,0.0,0.0,healthy,ml,Karton,PT Indomilk Industri,Dairy
+INV-0008,Whipping Cream,24942.8,4191.06,9421.61,18279.45,27701.06,0.0,0.0,0.0,healthy,ml,Liter,PT Indomilk Industri,Dairy
+INV-0009,Vanilla Syrup,5375.7,4794.6,10883.11,14182.4,25065.51,86067.91,86067.91,3442716.39,warning,ml,Liter,PT Sweetener Indonesia,Syrup
+INV-0010,Caramel Syrup,14957.9,5510.71,13023.97,17529.4,30553.37,0.0,0.0,0.0,healthy,ml,Liter,PT Sweetener Indonesia,Syrup
+INV-0011,Hazelnut Syrup,11459.7,4191.5,8722.0,10542.6,19264.6,0.0,0.0,0.0,healthy,ml,Liter,PT Sweetener Indonesia,Syrup
+INV-0012,Gula Aren Syrup,21766.8,9650.63,24059.58,33591.6,57651.18,132404.27,132404.27,2648085.31,warning,ml,Liter,PT Sweetener Indonesia,Syrup
+INV-0013,Chocolate Sauce,17658.8,10531.22,27936.52,40572.6,68509.12,145521.31,145521.31,4365639.44,warning,ml,Liter,PT Sweetener Indonesia,Syrup
+INV-0014,Matcha Powder,6563.5,2622.28,7060.43,10350.0,17410.43,67080.43,67080.43,8049651.99,warning,gram,Kilogram,PT Powderindo Utama,Powder
+INV-0015,Green Tea Powder,3800.9,1656.96,3411.08,4088.88,7499.96,0.0,0.0,0.0,healthy,gram,Kilogram,PT Powderindo Utama,Powder
+INV-0016,Simple Syrup,16805.8,9090.88,27823.15,43666.8,71489.95,150966.63,150966.63,1509666.28,warning,ml,Liter,PT Sweetener Indonesia,Syrup
+INV-0017,Black Tea Bag,647.0,264.48,696.71,1007.05,1703.76,7251.77,7251.77,7251774.41,warning,pcs,Karton,PT Agro Boga,Tea
+INV-0018,Green Tea Bag,1600.0,5.72,35.72,70.0,105.72,0.0,0.0,0.0,healthy,pcs,Karton,PT Agro Boga,Tea
+INV-0019,Chocolate Powder,5457.3,4868.91,9879.0,11666.75,21545.75,78074.33,78074.33,6245946.31,warning,gram,Kilogram,PT Powderindo Utama,Powder
+INV-0020,Honey,11995.7,4973.45,9660.33,10927.0,20587.33,0.0,0.0,0.0,healthy,ml,Liter,PT Sweetener Indonesia,Syrup
+INV-0021,Lemon Juice,12605.6,6088.02,15436.41,21788.4,37224.81,106648.41,106648.41,1599726.19,warning,ml,Liter,PT Sweetener Indonesia,Juice
+INV-0022,Sparkling Water,63789.2,39787.59,77282.62,87416.0,164698.62,100909.42,100909.42,504547099.95,warning,pcs,Karton,PT Agro Boga,Beverage
+INV-0023,Sugar,20000.0,5.72,35.72,70.0,105.72,0.0,0.0,0.0,healthy,gram,Kilogram,PT Agro Boga,Pantry
+INV-0024,Ice Cube,120043.8,222437.51,729490.55,1181957.9,1911448.45,1791404.65,1791404.65,3582809.29,critical,gram,Kilogram,PT Agro Boga,Pantry
+INV-0025,Paper Cup 8oz,8453.0,340.11,879.96,942.95,1822.91,0.0,0.0,0.0,healthy,pcs,Karton,PT Kemasindo Pack,Packaging
+INV-0026,Paper Cup 12oz,12506.0,1253.18,4734.57,6085.27,10819.84,0.0,0.0,0.0,healthy,pcs,Karton,PT Kemasindo Pack,Packaging
+INV-0027,Paper Cup 16oz,16000.0,6.6,46.6,70.0,116.6,0.0,0.0,0.0,healthy,pcs,Karton,PT Kemasindo Pack,Packaging
+INV-0028,Plastic Cup 16oz,15146.0,1434.42,5219.15,6617.05,11836.2,0.0,0.0,0.0,healthy,pcs,Karton,PT Kemasindo Pack,Packaging
+INV-0029,Lid 8oz,12939.0,275.26,648.96,652.93,1301.89,0.0,0.0,0.0,healthy,pcs,Karton,PT Kemasindo Pack,Packaging
+INV-0030,Lid 12-16oz,5527.0,1253.18,4734.57,6085.27,10819.84,0.0,0.0,0.0,healthy,pcs,Karton,PT Kemasindo Pack,Packaging
+INV-0031,Dome Lid,6153.0,1434.42,5219.15,6617.05,11836.2,0.0,0.0,0.0,healthy,pcs,Karton,PT Kemasindo Pack,Packaging
+INV-0032,Paper Straw,23148.0,1434.42,5219.15,6617.05,11836.2,0.0,0.0,0.0,healthy,pcs,Karton,PT Kemasindo Pack,Packaging
+INV-0033,Wooden Stirrer,5901.0,509.17,1450.96,1644.78,3095.74,0.0,0.0,0.0,healthy,pcs,Karton,PT Kemasindo Pack,Packaging
+INV-0034,Napkin,13333.0,547.98,1664.09,1950.1,3614.19,0.0,0.0,0.0,healthy,pcs,Karton,PT Kemasindo Pack,Packaging
+INV-0035,Croissant Plain Frozen,540.0,154.64,297.24,498.54,795.78,0.0,0.0,0.0,healthy,pcs,Karton,PT Bakery Mart,Food
+INV-0036,Almond Croissant Frozen,464.0,143.38,250.68,374.88,625.56,0.0,0.0,0.0,healthy,pcs,Karton,PT Bakery Mart,Food
+INV-0037,Banana Bread Slice,359.0,156.05,275.82,418.14,693.96,0.0,0.0,0.0,healthy,pcs,Karton,PT Bakery Mart,Food
+INV-0038,Chocolate Muffin,263.0,121.86,218.95,339.48,558.43,0.0,0.0,0.0,healthy,pcs,Karton,PT Bakery Mart,Food
+INV-0039,Cheese Slice,750.0,210.67,393.26,638.12,1031.38,0.0,0.0,0.0,healthy,pcs,Karton,PT Bakery Mart,Food
+INV-0040,Bread Loaf,41.0,210.67,393.26,638.12,1031.38,1490.46,1490.46,22356837.36,critical,pcs,Pcs,PT Bakery Mart,Food
+INV-0041,Butter,4205.7,1053.36,1966.29,3190.6,5156.89,0.0,0.0,0.0,healthy,gram,Kilogram,PT Bakery Mart,Food
+INV-0042,Vanilla Ice Cream,16295.9,12045.26,20352.45,29002.0,49354.45,123128.42,123128.42,2462568.39,warning,ml,Liter,PT Bakery Mart,Food

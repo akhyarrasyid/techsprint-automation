@@ -28,7 +28,7 @@ interface SidebarProps {
 export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => {
   const menuSections = [
     {
-      title: 'Core',
+      title: 'Core Planning',
       items: [
         { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
         { id: 'forecast', label: 'Forecast', icon: TrendingUp },
@@ -38,31 +38,14 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => 
       ],
     },
     {
-      title: 'Intelligence',
+      title: 'Intelligence & Simulation',
       items: [
         { id: 'copilot', label: 'AI Copilot', icon: Sparkles },
         { id: 'command-center', label: 'Command Center', icon: Command },
         { id: 'digital-twin', label: 'Digital Twin', icon: SlidersHorizontal },
         { id: 'explainability', label: 'Explainable AI', icon: Brain },
         { id: 'anomalies', label: 'Anomaly Detection', icon: AlertTriangle },
-      ],
-    },
-    {
-      title: 'Operations',
-      items: [
         { id: 'kpi', label: 'KPI Engine', icon: Gauge },
-        { id: 'data-quality', label: 'Data Quality', icon: ShieldCheck },
-        { id: 'model-monitoring', label: 'Model Monitoring', icon: Activity },
-        { id: 'mlops', label: 'MLOps', icon: FlaskConical },
-      ],
-    },
-    {
-      title: 'System',
-      items: [
-        { id: 'upload', label: 'Upload Data', icon: UploadCloud },
-        { id: 'export', label: 'Export Center', icon: Download },
-        { id: 'observability', label: 'Observability', icon: Eye },
-        { id: 'audit', label: 'Audit Trail', icon: ClipboardList },
       ],
     },
   ];

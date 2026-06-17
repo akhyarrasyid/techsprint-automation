@@ -171,7 +171,7 @@ def generate_insights(
         "description": (
             "Simulasi menunjukkan keterlambatan supplier +5 hari dapat menurunkan service level "
             "dari 98% menjadi ~82%. Disarankan meningkatkan safety stock untuk produk dengan "
-            "lead time tinggi (Minyak Sawit Mentah, Tebu Raw)."
+            "lead time tinggi (Espresso Bean Arabica, Paper Cup 8oz)."
         ),
         "severity": "medium"
     })

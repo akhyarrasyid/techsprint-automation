@@ -1,0 +1,11 @@
+kpi_name,value,unit,target,status
+Service Level,100.0,%,95.0,healthy
+Fill Rate,96.5,%,97.0,warning
+Forecast Accuracy,82.4,%,85.0,warning
+Inventory Turnover,7.2,x,8.0,warning
+Supplier Reliability,89.1,%,90.0,warning
+Gross Margin,-36.19,%,30.0,healthy
+Stockout Probability,0.0,%,5.0,warning
+Total Revenue,399067170.0,IDR,0.0,healthy
+Total COGS,543474017.05,IDR,0.0,healthy
+Total Profit,-144406847.05,IDR,0.0,healthy

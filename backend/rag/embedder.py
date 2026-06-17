@@ -13,6 +13,7 @@ def _get_model():
     global _model
     if _model is None:
         try:
+            os.environ["HF_HUB_OFFLINE"] = "1"
             from sentence_transformers import SentenceTransformer
             cache_dir = os.environ.get("HF_HOME", None)
             _model = SentenceTransformer(
