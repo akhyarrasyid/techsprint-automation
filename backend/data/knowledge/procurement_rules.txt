@@ -1,28 +1,57 @@
-# Procurement Rules — Supply Chain Procurement Knowledge Base
+# Procurement Rules — Kopikita Roastery Supply Chain Procurement
 
-## Purchase Order Management
-Purchase Order (PO) adalah dokumen resmi yang dikeluarkan oleh perusahaan kepada supplier untuk memesan barang atau jasa. PO harus diterbitkan segera ketika stok bahan baku mencapai atau jatuh di bawah Reorder Point (ROP). Keterlambatan penerbitan PO dapat menyebabkan stockout yang berdampak pada terhentinya lini produksi.
+## Prinsip Pengadaan Kopikita
+Purchase Order (PO) harus diterbitkan segera ketika stok mencapai Reorder Point (ROP).
+Untuk produk segar (Fresh Milk, Bread Loaf) — order lebih cepat karena perishable!
 
-## Lead Time Management
-Lead time adalah waktu yang dibutuhkan dari penerbitan PO hingga barang diterima di gudang. Lead time rata-rata supplier bervariasi: UD Makmur (Gandum) 4 hari, PT KemasIndo (Kemasan) 2 hari, PT AgroTebu (Tebu Raw) 5 hari, PT SawitSejahtera (Minyak Sawit Mentah) 6 hari. Variabilitas lead time harus diperhitungkan dalam safety stock calculation. Jika lead time aktual melebihi rata-rata, risiko stockout meningkat secara signifikan.
+## Reorder Point Decision
+Ketika current_stock ≤ ROP → buat PO sekarang
+Ketika current_stock ≤ safety_stock → status CRITICAL, PO darurat!
 
-## Supplier Risk Assessment
-Risiko supplier dinilai berdasarkan beberapa faktor: reliability (ketepatan waktu pengiriman), quality consistency (tingkat reject), financial stability, dan geographic risk. Supplier dengan reliability di bawah 90% harus memiliki backup supplier (dual sourcing strategy). Setiap keterlambatan supplier berpotensi menurunkan service level perusahaan sebesar 2-5% per hari keterlambatan.
+## Status PO yang Harus Dibuat Segera (Aktual)
+1. Bread Loaf (INV-0040) — CRITICAL: order 5.623 pcs ke PT Bakery Mart SEKARANG
+2. Espresso Bean Arabica (INV-0001) — WARNING: order 222.382 gram ke PT Gayo Kopi Utama
+3. Fresh Milk (INV-0004) — WARNING: order 1.680.351 ml ke Distributor Susu Segar
+4. Ice Cube (INV-0024) — WARNING: order 1.451.380 gram ke PT Agro Boga
 
-## Minimum Order Quantity (MOQ)
-Setiap supplier memiliki MOQ yang berbeda. MOQ harus diperhitungkan saat menentukan order quantity. Jika recommended order lebih kecil dari MOQ, perusahaan harus memutuskan antara: (1) memesan sebesar MOQ dan menanggung holding cost tambahan, atau (2) menunda order sampai kebutuhan akumulasi mencapai MOQ.
+## Lead Time per Kategori Supplier
+- Bakeri & produk segar harian: 1 hari (PT Bakery Mart)
+- Susu segar & dairy: 2 hari (Distributor Susu Segar)
+- Es batu & minuman: 3 hari (PT Agro Boga)
+- Gula aren & sirup: 3 hari (PT Sweetener Indonesia)
+- Biji kopi: 4 hari (PT Gayo Kopi Utama)
+- Matcha impor: 7 hari (PT Matcha Import)
 
-## Supplier Lead Time Shock Analysis
-Supplier delay shock terjadi ketika lead time meningkat drastis akibat faktor eksternal: bencana alam, regulasi pemerintah, gangguan logistik, atau pandemi. Simulasi menunjukkan delay +5 hari dapat menurunkan service level dari 98% menjadi 82%. Strategi mitigasi meliputi: meningkatkan safety stock 30-50%, mengaktifkan backup supplier, dan memprioritaskan produk fast-moving (kategori A dalam ABC Analysis).
+## Strategi Procurement
+1. Biji kopi: pertimbangkan kontrak 3 bulan → lock harga → hindari fluktuasi
+2. Ice Cube: order lebih besar dari MRP karena shortage terbesar
+3. Matcha Powder: buffer stock 2× lebih besar karena lead time 7 hari
+4. Fresh Milk: jangan over-stock → perishable 5 hari, turnover harus cepat
 
-## Procurement Cost Optimization
-Total Procurement Cost = Unit Cost × Order Quantity + Ordering Cost + Transportation Cost + Quality Inspection Cost. Ordering cost tetap (fixed cost per PO), sehingga menggabungkan beberapa item dalam satu PO (consolidation) dapat mengurangi total ordering cost. Volume discount dari supplier biasanya berlaku pada order di atas threshold tertentu.
+## Dual Sourcing yang Direkomendasikan
+Material kritis yang perlu supplier backup:
+- Espresso Bean Arabica: tambah supplier lokal sebagai backup PT Gayo Kopi Utama
+- Matcha Powder: cari distributor lokal selain import
+- Fresh Milk: daftar 1 distributor susu alternatif di area lokal
 
-## Vendor Evaluation Metrics
-Supplier performance diukur dengan: On-Time Delivery Rate (target ≥95%), Quality Acceptance Rate (target ≥98%), Price Competitiveness Index, responsiveness terhadap perubahan order, dan fleksibilitas dalam penyesuaian MOQ. Evaluasi dilakukan secara periodik (bulanan atau kuartalan) dan hasilnya menentukan alokasi order ke masing-masing supplier.
-
-## Strategic Sourcing
-Strategi pengadaan optimal melibatkan: single sourcing (satu supplier per material) untuk mendapat harga terbaik namun risiko tinggi, dual sourcing (dua supplier) untuk keseimbangan harga dan risiko, atau multi sourcing (tiga atau lebih supplier) untuk risiko minimal namun kompleksitas manajemen tinggi. Rekomendasi untuk material kritis (kategori A): dual sourcing minimum.
+## Biaya Pengadaan Estimasi (Material Shortage Aktual)
+- Ice Cube: ~IDR 167.792 per shortage event (83.896 gram × IDR 2/gram)
+- Sparkling Water: IDR 354.402 per event
+- Vanilla Ice Cream: IDR 254.122 per event
+- Gula Aren Syrup: IDR 236.496 per event
 
 ## Emergency Procurement Protocol
-Ketika terjadi stockout atau shortage kritis, protokol emergency procurement diaktifkan: (1) Identifikasi supplier alternatif dengan lead time tercepat, (2) Terbitkan PO expedited dengan biaya premium (typically +15-25% dari harga normal), (3) Koordinasi dengan tim logistik untuk penerimaan prioritas, (4) Update safety stock calculation untuk mencegah kejadian berulang.
+Ketika terjadi CRITICAL stockout seperti Bread Loaf:
+1. Hubungi PT Bakery Mart → minta pengiriman same-day/express
+2. Biasanya ada biaya premium +10-15% untuk expedited delivery
+3. Update safety stock calculation setelah insiden ini
+
+## Pertanyaan yang Sering Ditanya
+Q: Bahan baku apa yang paling mendesak untuk di-order?
+A: Bread Loaf dari PT Bakery Mart — status CRITICAL, stok hanya 41 pcs sementara safety stock 64 pcs. Order darurat 5.623 pcs.
+
+Q: Berapa biaya PO yang harus dikeluarkan minggu ini?
+A: Estimasi: Ice Cube ~IDR 170 ribu + Sparkling Water ~IDR 354 ribu + Vanilla Ice Cream ~IDR 254 ribu + Gula Aren Syrup ~IDR 236 ribu = total shortage cost sekitar IDR 1 juta. Plus PO untuk Espresso Bean, Fresh Milk, Bread Loaf yang jauh lebih besar.
+
+Q: Kenapa Fresh Milk perlu diorder dalam 2 hari?
+A: Fresh Milk adalah produk perishable, harus habis dalam 5 hari. Lead time 2 hari artinya harus order sebelum stok habis 2 hari lagi — tidak ada buffer untuk terlambat.

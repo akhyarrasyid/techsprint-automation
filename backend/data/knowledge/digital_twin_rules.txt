@@ -1,28 +1,66 @@
-# Digital Twin Rules — Simulation & Scenario Modeling Knowledge Base
+# Digital Twin Rules — Kopikita Roastery Scenario Simulation
 
-## Digital Twin Concept
-Digital Twin adalah replika virtual dari operasi supply chain yang memungkinkan simulasi what-if tanpa risiko terhadap operasi nyata. Sistem ini memungkinkan planner melihat dampak perubahan parameter sebelum implementasi.
+## Apa itu Digital Twin Kopikita?
+Digital Twin Kopikita adalah simulasi virtual operasi kedai kopi yang memungkinkan planner
+melihat dampak perubahan parameter SEBELUM diterapkan ke operasi nyata.
+Input: parameter slider → Output: proyeksi revenue, profit, service level, holding cost.
 
-## Demand Adjustment Simulation
-Parameter demand adjustment (-50% hingga +50%) mensimulasikan perubahan permintaan pasar. Kenaikan demand 20% meningkatkan revenue proporsional tetapi menurunkan service level jika safety stock tidak cukup. Penurunan demand 20% mengurangi revenue tetapi menaikkan service level dan menurunkan stockout risk.
+## 4 Skenario Standar Kopikita
 
-## Supplier Lead Time Simulation
-Peningkatan lead time dari 4 hari ke 9 hari (+5 hari) menurunkan service level sekitar 16% (dari 98% ke 82%). Setiap tambahan 1 hari lead time memerlukan peningkatan safety stock sekitar 12% untuk mempertahankan service level yang sama.
+### Base Scenario (Baseline)
+- Revenue: IDR 399.067.170
+- Gross Profit: IDR 307.093.343
+- Gross Margin: 77%
+- Service Level: ~98%
 
-## Material Cost Simulation
-Kenaikan biaya bahan baku 10% langsung mengurangi gross margin 6-7 percentage points. Pada skenario Raw Material +10%, margin turun dari 35.3% menjadi 28.8%. Dampak ini bisa dimitigasi dengan: (1) negosiasi harga, (2) substitusi material, (3) penyesuaian harga jual.
+### High Demand +20%
+- Revenue naik 20% → IDR ~478.880.604
+- Profit naik → IDR ~368.512.012
+- Risiko: stok Ice Cube dan Fresh Milk bisa tidak cukup
+- Rekomendasi: PO tambahan sebelum periode peak demand
 
-## Selling Price Simulation
-Kenaikan harga jual 10% meningkatkan revenue 10% tetapi berpotensi menurunkan demand (price elasticity). Penurunan harga 10% meningkatkan volume tetapi mengurangi margin. Sweet spot biasanya ada pada kenaikan 3-5% yang masih ditoleransi pasar.
+### Supplier Delay +5 Hari
+- Lead time supplier naik dari rata-rata 3-4 hari ke 8-9 hari
+- Service Level turun ~16% (dari 98% ke ~82%)
+- Holding cost naik karena perlu buffer stock lebih besar
+- Menu iced drinks paling terdampak (butuh Ice Cube dan Fresh Milk)
 
-## Monte Carlo Simulation
-Monte Carlo simulation menggunakan 1000 iterasi random sampling untuk menghitung probabilitas stockout. Variabel acak: daily_demand (normal distribution), lead_time (uniform distribution). Output: P(stockout) per produk, yang membantu menentukan safety stock optimal.
+### Raw Material +10%
+- COGS naik 10%
+- Gross Margin turun dari 77% ke ~72%
+- Profit berkurang ~IDR 18-20 juta untuk 5 minggu
+- Menu dengan COGS lebih besar (makanan) paling terdampak
 
-## Service Level Sensitivity
-Service level sangat sensitif terhadap kombinasi high demand + long lead time. Skenario terburuk: demand +50% + lead time 14 hari bisa menurunkan service level ke 50%. Risk matrix: Low Risk (SL >= 95%), Medium Risk (85-95%), High Risk (< 85%).
+## Parameter Simulasi Digital Twin
+- Demand Adjustment: -50% hingga +50% dari forecast base
+- Lead Time: 1 hingga 14 hari (geser slider)
+- Raw Material Cost: -30% hingga +30% dari harga aktual
+- Output: Revenue, Profit, Gross Margin, Service Level, Holding Cost
 
-## Impact on Profitability
-Setiap 1% penurunan service level berpotensi menghilangkan revenue sebesar 1% × total_expected_revenue. Sebaliknya, overstock meningkatkan holding cost. Optimal point: service level 95-98% dengan holding cost terkendali.
+## Rumus Simulasi yang Digunakan
+- sim_revenue = base_revenue × (1 + demand_adj%)
+- sim_cogs = base_cogs × (1 + demand_adj%) × (1 + material_cost_adj%)
+- sim_profit = sim_revenue - sim_cogs
+- holding_cost = sim_cogs × 0.15 × (1 + (lead_time - 4) × 0.12)
+- service_level = max(0, 98 - (lead_time - 4) × 3 - max(0, demand_adj - 0.1) × 20)
 
-## Scenario Comparison Framework
-Saat membandingkan skenario, prioritaskan: (1) Gross Profit absolute, (2) Margin percentage, (3) Service Level, (4) Holding Cost. Skenario terbaik adalah yang memaksimalkan gross profit sambil mempertahankan service level >= 95%.
+## Kapan Perlu Simulasi
+1. Sebelum event promosi besar (diskon, campaign) → simulasi demand +20%
+2. Sebelum hari raya (Lebaran, Natal) → simulasi demand +30-40%
+3. Saat ada supplier bermasalah → simulasi lead time +5-7 hari
+4. Saat harga biji kopi naik di pasar → simulasi material cost +10-20%
+
+## Interpretasi Output Service Level
+- >95%: Aman, tidak ada risiko stockout bermakna
+- 85-95%: Perlu monitoring ketat, PO segera untuk bahan kritis
+- <85%: Risiko tinggi, emergency procurement diperlukan
+
+## Pertanyaan yang Sering Ditanya
+Q: Jika demand naik 20%, apa yang perlu dipersiapkan Kopikita?
+A: Revenue naik ke ~IDR 479 juta. Pastikan stok Ice Cube, Fresh Milk, dan Espresso Bean dicukupi dulu — ketiganya sudah WARNING bahkan di base scenario.
+
+Q: Berapa dampak kenaikan harga kopi 10% terhadap profit?
+A: Gross margin turun dari 77% ke sekitar 72%. Total profit berkurang ~IDR 18-20 juta untuk 5 minggu ke depan.
+
+Q: Jika supplier delay 5 hari, menu apa yang paling terdampak?
+A: Semua menu iced drinks: Iced Americano, Iced Latte, Kopi Susu Gula Aren, Caramel Macchiato — karena butuh Ice Cube dan Fresh Milk yang lead time-nya sudah mendekati batas.

@@ -3,7 +3,9 @@
 import React, { useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
-import { safeMRP, safeDashboardSummary } from '../../../lib/mock';
+import { fetchMRP, fetchDashboardSummary } from '../../../lib/api';
+import ErrorBanner from '../../../components/error-banner';
+import EmptyState from '../../../components/empty-state';
 import { MRPAccordion } from '../../../components/mrp/mrp-accordion';
 import { MaterialShortageTable } from '../../../components/tables/material-shortage-table';
 import { OrderScheduleTimeline } from '../../../components/charts/order-schedule-timeline';
@@ -25,15 +27,22 @@ function MRPContent() {
   const [delayDays, setDelayDays] = useState(0);
 
   // Fetch MRP data
-  const { data: mrp, isLoading } = useQuery({
+  const { data: mrp, isLoading, error, refetch } = useQuery({
     queryKey: ['mrp', scenario],
-    queryFn: () => safeMRP(scenario),
+    queryFn: () => fetchMRP(scenario),
   });
+
+  if (!isLoading && error) {
+    return <ErrorBanner message={(error as Error).message} onRetry={refetch} />;
+  }
+  if (!isLoading && !mrp?.length) {
+    return <EmptyState title="Belum ada data MRP" description="Upload file sales history dan jalankan pipeline terlebih dahulu." />;
+  }
 
   // Fetch Dashboard Summary for base profit value
   const { data: summary } = useQuery({
     queryKey: ['dashboard-summary', scenario],
-    queryFn: () => safeDashboardSummary(scenario),
+    queryFn: () => fetchDashboardSummary(scenario),
   });
 
   // Client-side simulation of delay on expected arrival dates & lead times

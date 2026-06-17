@@ -5,91 +5,59 @@ import {
   ProductInventory,
   ProductMRP,
   ProductProfitability,
-  PipelineResults,
-  ValidationReport,
-  ProfitabilityReport,
   AIInsight,
-  ExplainabilityReport
+  ExplainabilityReport,
+  UploadResponse,
+  PipelineStatus,
 } from './types';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:7860';
 
 export async function fetchHealth(): Promise<HealthStatus> {
   const res = await fetch(`${API_BASE_URL}/health`);
-  if (!res.ok) throw new Error('Failed to fetch health status');
+  if (!res.ok) throw new Error('Server tidak dapat dihubungi');
   return res.json();
 }
 
 export async function fetchDashboardSummary(scenario: string = 'Base'): Promise<DashboardSummary> {
   const res = await fetch(`${API_BASE_URL}/dashboard-summary?scenario=${encodeURIComponent(scenario)}`);
-  if (!res.ok) throw new Error('Failed to fetch dashboard summary');
+  if (!res.ok) throw new Error('Gagal memuat ringkasan dashboard');
   return res.json();
 }
 
 export async function fetchForecast(scenario: string = 'Base'): Promise<ProductForecast[]> {
   const res = await fetch(`${API_BASE_URL}/forecast?scenario=${encodeURIComponent(scenario)}`);
-  if (!res.ok) throw new Error('Failed to fetch forecast data');
+  if (!res.ok) throw new Error('Gagal memuat data forecast');
   return res.json();
 }
 
 export async function fetchInventory(scenario: string = 'Base'): Promise<ProductInventory[]> {
   const res = await fetch(`${API_BASE_URL}/inventory?scenario=${encodeURIComponent(scenario)}`);
-  if (!res.ok) throw new Error('Failed to fetch inventory planning data');
+  if (!res.ok) throw new Error('Gagal memuat data inventaris');
   return res.json();
 }
 
 export async function fetchMRP(scenario: string = 'Base'): Promise<ProductMRP[]> {
   const res = await fetch(`${API_BASE_URL}/mrp?scenario=${encodeURIComponent(scenario)}`);
-  if (!res.ok) throw new Error('Failed to fetch MRP raw materials');
+  if (!res.ok) throw new Error('Gagal memuat data MRP');
   return res.json();
 }
 
 export async function fetchProfitability(scenario: string = 'Base'): Promise<ProductProfitability[]> {
   const res = await fetch(`${API_BASE_URL}/profitability?scenario=${encodeURIComponent(scenario)}`);
-  if (!res.ok) throw new Error('Failed to fetch profitability analysis');
-  return res.json();
-}
-
-export async function uploadSalesCSV(file: File): Promise<ValidationReport> {
-  const formData = new FormData();
-  formData.append('file', file);
-
-  const res = await fetch(`${API_BASE_URL}/upload`, {
-    method: 'POST',
-    body: formData,
-  });
-  if (!res.ok) {
-    const err = await res.json();
-    throw new Error(err.detail || 'Failed to upload CSV file');
-  }
-  return res.json();
-}
-
-export async function runPipeline(scenario: string = 'Base'): Promise<PipelineResults> {
-  const res = await fetch(`${API_BASE_URL}/run-pipeline?scenario=${encodeURIComponent(scenario)}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ scenario }),
-  });
-  if (!res.ok) throw new Error('Failed to run pipeline execution');
-  return res.json();
-}
-
-export async function fetchProfitabilityReport(scenario: string = 'Base'): Promise<ProfitabilityReport> {
-  const res = await fetch(`${API_BASE_URL}/profitability?scenario=${encodeURIComponent(scenario)}`);
-  if (!res.ok) throw new Error('Failed to fetch profitability report');
+  if (!res.ok) throw new Error('Gagal memuat analisis profitabilitas');
   return res.json();
 }
 
 export async function fetchInsights(scenario: string = 'Base'): Promise<AIInsight[]> {
   const res = await fetch(`${API_BASE_URL}/insights?scenario=${encodeURIComponent(scenario)}`);
-  if (!res.ok) throw new Error('Failed to fetch AI insights');
+  if (!res.ok) throw new Error('Gagal memuat insights');
   return res.json();
 }
 
 export async function fetchExplainability(): Promise<ExplainabilityReport> {
   const res = await fetch(`${API_BASE_URL}/explainability`);
-  if (!res.ok) throw new Error('Failed to fetch explainability report');
+  if (!res.ok) throw new Error('Gagal memuat data explainability');
   return res.json();
 }
 
@@ -107,7 +75,7 @@ export async function askCopilot(question: string, scenario: string = 'Base'): P
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ question, scenario }),
   });
-  if (!res.ok) throw new Error('Failed to ask copilot');
+  if (!res.ok) throw new Error('Gagal terhubung ke AI Copilot');
   return res.json();
 }
 
@@ -122,78 +90,48 @@ export async function simulateDigitalTwin(params: {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(params),
   });
-  if (!res.ok) throw new Error('Failed to run simulation');
+  if (!res.ok) throw new Error('Gagal menjalankan simulasi Digital Twin');
   return res.json();
 }
 
-export async function fetchOptimization(budget?: number, warehouseCapacity?: number) {
-  const params = new URLSearchParams();
-  if (budget) params.set('budget', budget.toString());
-  if (warehouseCapacity) params.set('warehouse_capacity', warehouseCapacity.toString());
-  const res = await fetch(`${API_BASE_URL}/optimization?${params.toString()}`);
-  if (!res.ok) throw new Error('Failed to fetch optimization');
-  return res.json();
-}
-
-// ── Phase 15: KPI ──
 export async function fetchKPI(scenario: string = 'Base') {
   const res = await fetch(`${API_BASE_URL}/kpi?scenario=${encodeURIComponent(scenario)}`);
-  if (!res.ok) throw new Error('Failed to fetch KPI');
+  if (!res.ok) throw new Error('Gagal memuat KPI');
   return res.json();
 }
 
-// ── Phase 16: Anomalies ──
 export async function fetchAnomalies(scenario: string = 'Base') {
   const res = await fetch(`${API_BASE_URL}/anomalies?scenario=${encodeURIComponent(scenario)}`);
-  if (!res.ok) throw new Error('Failed to fetch anomalies');
+  if (!res.ok) throw new Error('Gagal memuat data anomali');
   return res.json();
 }
 
-// ── Phase 19: Command Center ──
 export async function fetchCommandCenter(scenario: string = 'Base') {
   const res = await fetch(`${API_BASE_URL}/command-center?scenario=${encodeURIComponent(scenario)}`);
-  if (!res.ok) throw new Error('Failed to fetch command center');
+  if (!res.ok) throw new Error('Gagal memuat Command Center');
   return res.json();
 }
 
-// ── Phase 20: Model Monitoring ──
-export async function fetchModelMonitoring() {
-  const res = await fetch(`${API_BASE_URL}/model-monitoring`);
-  if (!res.ok) throw new Error('Failed to fetch model monitoring');
+export async function uploadDataFile(file: File): Promise<UploadResponse> {
+  const formData = new FormData();
+  formData.append('file', file);
+  const res = await fetch(`${API_BASE_URL}/upload`, {
+    method: 'POST',
+    body: formData,
+  });
+  if (!res.ok) {
+    let detail = 'Upload gagal';
+    try {
+      const err = await res.json();
+      detail = err.detail || detail;
+    } catch {}
+    throw new Error(detail);
+  }
   return res.json();
 }
 
-// ── Phase 21: Observability ──
-export async function fetchObservability() {
-  const res = await fetch(`${API_BASE_URL}/observability`);
-  if (!res.ok) throw new Error('Failed to fetch observability');
-  return res.json();
-}
-
-// ── Phase 22: Export ──
-export async function fetchExport(format: string, scenario: string = 'Base') {
-  const res = await fetch(`${API_BASE_URL}/export/${format}?scenario=${encodeURIComponent(scenario)}`);
-  if (!res.ok) throw new Error('Failed to export');
-  return res;
-}
-
-// ── Phase 23: Audit Trail ──
-export async function fetchAuditTrail(limit: number = 50) {
-  const res = await fetch(`${API_BASE_URL}/audit-trail?limit=${limit}`);
-  if (!res.ok) throw new Error('Failed to fetch audit trail');
-  return res.json();
-}
-
-// ── Phase 24: Data Quality ──
-export async function fetchDataQuality(scenario: string = 'Base') {
-  const res = await fetch(`${API_BASE_URL}/data-quality?scenario=${encodeURIComponent(scenario)}`);
-  if (!res.ok) throw new Error('Failed to fetch data quality');
-  return res.json();
-}
-
-// ── Phase 25: MLOps ──
-export async function fetchMLOps() {
-  const res = await fetch(`${API_BASE_URL}/mlops`);
-  if (!res.ok) throw new Error('Failed to fetch MLOps');
+export async function fetchPipelineStatus(): Promise<PipelineStatus> {
+  const res = await fetch(`${API_BASE_URL}/pipeline-status`);
+  if (!res.ok) throw new Error('Gagal memuat status pipeline');
   return res.json();
 }

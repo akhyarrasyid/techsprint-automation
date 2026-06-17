@@ -1,25 +1,56 @@
-# Supplier Rules — Procurement & Supplier Management Knowledge Base
+# Supplier Rules — Kopikita Roastery Procurement
 
-## Supplier Database
-Sistem mencatat informasi supplier: nama, lead time, MOQ, reliability score, dan material yang disuplai. Supplier utama: UD Makmur (Gandum, 4 hari), PT Cargill (Minyak Sawit, 5 hari), CV Gemilang (Packaging, 3 hari), PT Indotama (Additives, 4 hari), PT Agri Nusa (Tebu Raw, 6 hari).
+## Daftar Supplier Aktif Kopikita
+1. PT Gayo Kopi Utama — Biji kopi (Arabica, Robusta, Decaf)
+   Lead time: 4 hari | Reliability: 92% | Risiko: kenaikan harga biji kopi impor
 
-## Lead Time Management
-Lead time terdiri dari: order processing (1 hari) + transit time (2-4 hari) + receiving inspection (0.5 hari). Total lead time menentukan kapan PO harus diterbitkan. Rule: PO release date = required date - lead_time - 1 hari buffer.
+2. PT Agro Boga — Es batu (Ice Cube), Sparkling Water
+   Lead time: 3 hari | Reliability: 95%
 
-## Supplier Risk Assessment
-Risiko supplier diukur berdasarkan: (1) Historical on-time delivery rate, (2) Quality rejection rate, (3) Financial stability. Supplier dengan on-time rate < 90% memerlukan dual-sourcing strategy.
+3. PT Sweetener Indonesia — Gula Aren Syrup, Simple Syrup, Vanilla Syrup
+   Lead time: 3 hari | Reliability: 93%
 
-## Dual Sourcing Strategy
-Untuk material kritis (Gandum, Minyak Sawit), direkomendasikan memiliki minimal 2 supplier aktif. Alokasi: 70% ke primary supplier, 30% ke secondary supplier. Ini mengurangi risiko supply disruption.
+4. PT Bakery Mart — Bread Loaf, Croissant, Butter, Almond Powder, Cocoa Powder
+   Lead time: 1 hari | Reliability: 97% | Pengiriman harian (produk segar)
 
-## Purchase Order Optimization
-PO harus mempertimbangkan: (1) MOQ supplier, (2) Quantity discount brackets, (3) Kapasitas gudang, (4) Cash flow availability. Konsolidasi PO dari beberapa produk ke supplier yang sama untuk mendapatkan volume discount.
+5. Distributor Susu Segar — Fresh Milk, Heavy Cream, Creamer
+   Lead time: 2 hari | Reliability: 96% | Produk segar perishable
 
-## Supplier Performance Monitoring
-KPI supplier: (1) On-time delivery rate (target > 95%), (2) Quality acceptance rate (target > 98%), (3) Price competitiveness, (4) Responsiveness. Review quarterly dan renegosiasi kontrak annual.
+6. PT Matcha Import — Matcha Powder (grade food service)
+   Lead time: 7 hari | Reliability: 88% | Impor dari Jepang/China, perlu buffer stock lebih
 
-## Contract Negotiation
-Kontrak jangka panjang (6-12 bulan) memberikan price lock protection terhadap fluktuasi harga bahan baku. Penalty clause untuk keterlambatan: 1% dari nilai PO per hari keterlambatan, maksimum 10%.
+## Harga Satuan Bahan Baku Utama
+- Espresso Bean Arabica: IDR 150/gram (IDR 150.000/kg)
+- Robusta Bean: IDR 100/gram
+- Fresh Milk: IDR 15/ml (IDR 15.000/liter)
+- Gula Aren Syrup: IDR 20/ml
+- Vanilla Syrup: IDR 15/ml
+- Matcha Powder: IDR 250–300/gram (import)
+- Ice Cube: IDR 2/gram
+- Sparkling Water: IDR 15/ml (botol 330ml = IDR 5.000)
+- Bread Loaf: IDR 750/slice (1 loaf = 20 slice = IDR 15.000)
 
-## Emergency Procurement
-Jika terjadi stockout atau supplier failure, emergency procurement dari spot market dengan markup 15-25%. Ini harus menjadi last resort karena sangat mahal. Lebih baik investasi di safety stock.
+## Risiko Supplier Paling Kritis
+1. PT Gayo Kopi Utama (biji kopi): harga fluktuatif, lead time bisa naik jadi 9 hari di musim panen buruk
+2. PT Matcha Import: lead time 7 hari terpanjang, reliability 88% terendah → buffer stock wajib
+3. Distributor Susu Segar: produk perishable, harus dihabiskan dalam 5 hari — turnover sangat kritis
+
+## Rekomendasi Procurement
+- Biji kopi: pertimbangkan kontrak 3 bulan untuk lock harga dengan PT Gayo Kopi Utama
+- Ice Cube: order lebih besar karena shortage terbesar di MRP, supplier PT Agro Boga cukup reliable
+- Bread Loaf: order darurat 5.623 pcs ke PT Bakery Mart — stok CRITICAL saat ini hanya 41 pcs
+
+## Strategi Dual Sourcing
+Material kritis yang disarankan dual source:
+- Espresso Bean: tambah 1 supplier lokal sebagai backup PT Gayo Kopi Utama
+- Matcha Powder: cari supplier domestik sebagai alternatif import
+
+## Pertanyaan yang Sering Ditanya
+Q: Siapa supplier utama kopi Kopikita?
+A: PT Gayo Kopi Utama, menyuplai Espresso Bean Arabica (150 IDR/gram), Robusta Bean, dan Decaf Bean. Lead time 4 hari.
+
+Q: Bahan baku apa yang paling lama lead time-nya?
+A: Matcha Powder dari PT Matcha Import, lead time 7 hari karena impor. Safety stock Matcha harus lebih besar.
+
+Q: Bread Loaf dipesan dari mana?
+A: PT Bakery Mart, lead time 1 hari, pengiriman harian. Stok saat ini CRITICAL — perlu order darurat 5.623 pcs.

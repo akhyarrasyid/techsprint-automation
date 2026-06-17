@@ -24,11 +24,11 @@ class CopilotResponse(BaseModel):
 
 
 @router.post("/ask", response_model=CopilotResponse)
-async def copilot_ask(req: CopilotRequest):
+def copilot_ask(req: CopilotRequest):
     """
     Ask the AI Supply Chain Copilot a question.
-    Uses RAG (FAISS + Groq Llama 4 Scout) with live pipeline data.
-    Falls back to rule-based insight engine if LLM is unavailable.
+    Uses RAG (FAISS + Groq) with live pipeline data.
+    Sync def so FastAPI runs it in a thread pool (correct for CPU-bound embedding).
     """
     if not req.question.strip():
         raise HTTPException(status_code=400, detail="Question cannot be empty.")

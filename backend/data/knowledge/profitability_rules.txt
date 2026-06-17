@@ -1,29 +1,53 @@
-# Profitability Rules — Financial Analysis Knowledge Base
+# Profitability Rules — Kopikita Roastery Financial Analysis
 
-## Revenue Calculation
-Revenue dihitung sebagai: total_revenue = sum(forecast_demand × selling_price) untuk semua produk. Revenue projection menggunakan base scenario forecast. Variasi revenue antar skenario disebabkan perubahan volume demand, bukan harga.
+## Keuangan Aktual Kopikita (Base Scenario, 5 Minggu)
+- Total Revenue: IDR 399.067.170
+- Total COGS: IDR 91.973.827
+- Total Profit (Gross): IDR 307.093.343
+- Gross Margin: 77% (sangat bagus untuk standar F&B Indonesia)
+- COGS rata-rata: ~23% dari harga jual
 
-## Cost of Goods Sold (COGS)
-COGS = sum(forecast_demand × unit_cost) untuk semua produk. Unit cost mencakup: bahan baku, tenaga kerja langsung, dan overhead produksi. Perubahan harga bahan baku 10% langsung meningkatkan COGS sebesar 6-8% (tergantung komposisi BOM).
+## Top 5 Menu Paling Profitable (Estimated Profit 5 Minggu)
+1. Iced Latte (MENU-005): IDR 22.025.520
+2. Caramel Macchiato (MENU-007): IDR 21.692.632
+3. Iced Mocha (MENU-012): IDR 21.169.882
+4. Iced Matcha Latte (MENU-015): IDR 19.953.653
+5. Kopi Susu Gula Aren (MENU-010): IDR 19.651.086
 
-## Gross Profit dan Margin
-Gross Profit = Revenue - COGS. Gross Margin = (Gross Profit / Revenue) × 100%. Margin di atas 35% dianggap sehat untuk industri bahan makanan. Margin di bawah 25% memerlukan review harga jual atau efisiensi produksi.
+## Top 5 Menu Paling Tinggi Marginnya (per unit)
+1. Iced Matcha Latte (MENU-015): IDR 27.190/cup (margin 85%)
+2. Iced Mocha (MENU-012): IDR 26.850/cup (margin 79%)
+3. Caramel Macchiato (MENU-007): IDR 24.750/cup (margin 77%)
+4. Matcha Latte (MENU-014): IDR 24.940/cup (margin 83%)
+5. Affogato (MENU-020): IDR 24.400/cup (margin 81%)
 
-## Scenario Analysis
-Sistem membandingkan 4 skenario bisnis:
-1. Base: kondisi normal tanpa perubahan parameter.
-2. High Demand +20%: permintaan naik 20%, revenue naik tapi service level turun.
-3. Supplier Delay +5 hari: lead time bertambah 5 hari, holding cost naik, service level turun.
-4. Raw Material +10%: biaya bahan baku naik 10%, margin tergerus tapi revenue tetap.
+## Menu dengan Margin Terendah
+- Hot Tea (MENU-016): IDR 12.650/cup (margin 84% tapi volume rendah)
+- Croissant Plain (MENU-021): IDR 9.950/pcs (margin 55% — makanan COGS lebih tinggi)
+- Chocolate Muffin (MENU-024): IDR 12.950/pcs (margin 65%)
 
-## Service Level Impact
-Service level mengukur persentase permintaan yang dapat dipenuhi dari stok. Target service level = 98%. Setiap penurunan 1% service level berarti potential lost sales. High Demand scenario dapat menurunkan service level ke 80% jika safety stock tidak disesuaikan.
+## Cara Hitung COGS per Menu
+COGS = sum(qty_used × unit_cost) per bahan BOM
+Contoh Kopi Susu Gula Aren: 18g×150/g + 150ml×15/ml + 25ml×20/ml = 2.700 + 2.250 + 500 = ~6.450 IDR
+Selling price 24.000, profit/cup = 17.550
 
-## Break-Even Analysis
-Break-even point = Fixed Costs / (Selling Price - Variable Cost per unit). Produk di bawah break-even harus direview: naikkan harga, kurangi cost, atau diskontinyu.
+## Skenario Bisnis
+- Base: gross margin 77%
+- High Demand +20%: revenue naik 20% → IDR 478 juta, tapi perlu pastikan stok cukup
+- Supplier Delay +5 hari: lead time bertambah → holding cost naik, service level turun
+- Raw Material +10%: COGS naik → gross margin turun dari 77% ke ~72%
 
-## Product Mix Optimization
-Tidak semua produk memiliki margin sama. Tepung Protein Tinggi (36.7% margin) lebih menguntungkan dari Premix Donat (33.3%). Optimasi product mix dapat meningkatkan total profit 5-10% tanpa menambah kapasitas.
+## Rekomendasi Optimasi Profit
+1. Dorong penjualan Iced Matcha Latte dan Caramel Macchiato — margin tinggi + trend positif
+2. Menu makanan (Croissant, Muffin) margin 55-65%, lebih rendah dari minuman — perlu review harga atau ganti supplier
+3. Kopi Susu Gula Aren volume tinggi tapi trend -1.4% — perlu promosi untuk mempertahankan posisi
 
-## Holding Cost in Profitability
-Holding cost = 15% × average_inventory_value per tahun. Overstock menambah holding cost dan mengurangi profit. Supplier delay scenario meningkatkan holding cost karena safety stock harus diperbesar.
+## Pertanyaan yang Sering Ditanya
+Q: Menu apa yang paling menguntungkan?
+A: Iced Latte memberikan profit IDR 22 juta untuk 5 minggu ke depan, diikuti Caramel Macchiato IDR 21.7 juta dan Iced Mocha IDR 21.2 juta.
+
+Q: Berapa gross margin Kopikita?
+A: 77% — sangat tinggi untuk standar kedai kopi. COGS hanya 23% dari revenue.
+
+Q: Jika bahan baku naik 10%, bagaimana dampaknya?
+A: Gross margin turun dari 77% menjadi sekitar 72%. Total profit berkurang ~IDR 18 juta untuk 5 minggu.

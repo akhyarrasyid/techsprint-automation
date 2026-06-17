@@ -1,22 +1,59 @@
-# Forecast Rules — Demand Forecasting Knowledge Base
+# Forecast Rules — Kopikita Roastery Demand Forecasting
 
-## Moving Average
-Moving Average (MA) adalah metode peramalan yang menggunakan rata-rata data historis untuk memproyeksikan permintaan masa depan. Dalam sistem ini, digunakan rolling_mean_7 yaitu rata-rata bergerak 7 hari untuk menangkap pola weekly seasonality. Jika rolling_mean_7 naik secara konsisten selama 3 minggu berturut-turut, ini mengindikasikan tren kenaikan permintaan (uptrend).
+## Model Forecasting Kopikita
+Model: Day-of-Week (DOW) Average Autoregressive + Exponential Smoothing Trend
+Input: 169.606 transaksi POS valid Januari–Juni 2025
+Horizon: 5 minggu ke depan (W1–W5)
+Weekly growth cap: maksimum ±3% per minggu untuk hindari over-extrapolation
 
-## Trend Analysis
-Trend percentage (trend_pct) dihitung sebagai perubahan persentase antara forecast minggu pertama (forecast_next_week) dan forecast minggu kelima (forecast_w28). Trend positif di atas 5% menandakan demand growth yang signifikan. Trend negatif di bawah -5% menandakan demand decline yang memerlukan penyesuaian produksi.
+## Cara Kerja
+1. Hitung rata-rata penjualan per hari-dalam-seminggu (Senin–Minggu) per menu
+2. Proyeksikan 7 hari ke depan menggunakan rata-rata DOW → W1
+3. Hitung weekly_growth = (mean 30 hari terakhir / mean 30 hari pertama)^(1/25) - 1
+4. Terapkan compound multiplier ke W2–W5: W2 = W1×(1+g), W3 = W1×(1+g)², dst
+5. Cap pertumbuhan ±3%/minggu
+
+## Hasil Forecast 5 Menu Terlaris (W1, unit/minggu)
+1. Kopi Susu Gula Aren (MENU-010): 1.119 unit, trend -1.4%
+2. Iced Latte (MENU-005): 1.019 unit, trend 0.0%
+3. Iced Americano (MENU-003): 989 unit, trend +1.5%
+4. Caffe Latte (MENU-004): 885 unit, trend -1.5%
+5. Caramel Macchiato (MENU-007): 876 unit, trend +4.4%
+
+## Menu dengan Trend Positif Terkuat
+- Iced Matcha Latte (MENU-015): trend +5.4%
+- Iced Mocha (MENU-012): trend +4.9%
+- Caramel Macchiato (MENU-007): trend +4.4%
+- Vanilla Latte (MENU-008): trend +4.3%
+- Cappuccino (MENU-006): trend +3.4%
+
+## Menu dengan Trend Negatif
+- Americano (MENU-002): trend -1.9%
+- Caffe Latte (MENU-004): trend -1.5%
+- Kopi Susu Gula Aren (MENU-010): trend -1.4%
 
 ## Confidence Interval
-Confidence interval memberikan rentang ketidakpastian pada setiap titik forecast. Batas bawah dihitung sebagai forecast * 0.92 (8% di bawah) dan batas atas sebagai forecast * 1.08 (8% di atas). Ini membantu planner dalam membuat keputusan safety stock yang proporsional terhadap ketidakpastian permintaan.
+CI = ±1.96 × std_penjualan_harian × sqrt(7)
+Artinya ada 5% kemungkinan penjualan aktual di luar rentang CI.
 
-## Lag Features
-Fitur lag_7 (penjualan 7 hari yang lalu) merupakan prediktor terkuat dalam model LightGBM dengan importance 35.4%. Ini menunjukkan bahwa pola permintaan minggu lalu adalah indikator paling andal untuk minggu depan, mengkonfirmasi weekly seasonality yang kuat pada produk tepung dan premix.
+## Pola Permintaan Harian Kopikita
+Hari ramai: Sabtu, Minggu, Jumat (weekend premium +20–30% vs weekday)
+Hari sepi: Selasa, Rabu
+Peak hour pagi: 07:00–09:00
+Peak hour sore: 14:00–16:00
 
-## Forecast Horizon
-Sistem melakukan peramalan 5 minggu ke depan (W24-W28) dengan projection multiplier bertahap: W1 (base), W2 (+5%), W3 (+3%), W4 (+2.5%), W5 (+2.5%). Multiplier ini mencerminkan tren pertumbuhan organik moderat yang umum pada industri bahan makanan.
+## Cara Membaca Kolom Forecast
+- forecast_next_week: Proyeksi demand 7 hari ke depan (unit)
+- forecast_w25/w26/w27/w28: Proyeksi untuk minggu 2, 3, 4, 5
+- trend_pct: Persentase perubahan tren vs baseline
+- confidence_interval_low/high: Rentang 95% kemungkinan aktual
 
-## Ensemble Model
-Sistem menggunakan ensemble 3 model: LightGBM (40% weight), CatBoost (30% weight), dan Neural Network ONNX (30% weight). Ensemble terbukti lebih robust dibanding single model karena mengurangi variance dan overfitting.
+## Pertanyaan yang Sering Ditanya
+Q: Menu apa yang paling banyak dipesan minggu depan?
+A: Kopi Susu Gula Aren dengan ~1.119 unit/minggu, diikuti Iced Latte 1.019 unit.
 
-## Seasonal Pattern
-Produk tepung dan premix menunjukkan pola musiman terkait hari raya (Lebaran, Natal). Permintaan bisa melonjak 30-50% pada 2 minggu sebelum hari raya. Planner harus memperhitungkan ini dalam safety stock planning.
+Q: Menu apa yang tren-nya paling naik?
+A: Iced Matcha Latte (+5.4%), Iced Mocha (+4.9%), Caramel Macchiato (+4.4%).
+
+Q: Berapa total permintaan semua menu minggu depan?
+A: Sekitar 13.000–15.000 unit total (semua 25 menu).

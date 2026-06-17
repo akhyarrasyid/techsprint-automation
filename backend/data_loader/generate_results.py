@@ -60,34 +60,47 @@ def main():
     week1_forecast_dict = {}
     
     for m_id in menu_ids:
-        history_values = list(daily_sales[daily_sales['Menu_ID'] == m_id].sort_values('DateStr')['Quantity'].values)
+        daily_sales_menu = daily_sales[daily_sales['Menu_ID'] == m_id].sort_values('DateStr')
+        history_values = list(daily_sales_menu['Quantity'].values)
         if not history_values:
             history_values = [10.0] * 7
-            
+
+        # Compute weekly growth trend from first-30 vs last-30 days of history
+        if len(history_values) >= 60:
+            first_30_avg = np.mean(history_values[:30])
+            last_30_avg = np.mean(history_values[-30:])
+            # Growth rate per week across the ~25-week historical window; cap at ±3%/week
+            weekly_growth = ((last_30_avg / first_30_avg) ** (1 / 25) - 1) if first_30_avg > 0 else 0.0
+            weekly_growth = float(np.clip(weekly_growth, -0.03, 0.03))
+        else:
+            weekly_growth = 0.0
+
         sales_std = np.std(history_values) if len(history_values) > 1 else 2.0
         if sales_std == 0:
             sales_std = 2.0
-            
+
         predictions = []
         current_window = history_values[-7:] if len(history_values) >= 7 else (history_values + [np.mean(history_values)]*7)[:7]
-        
+
         for day_idx in range(1, 36):
             pred_date = last_date + timedelta(days=day_idx)
             dow = pred_date.weekday()
-            
+
             pred_qty = dow_averages.get((m_id, dow), menu_overall_mean.get(m_id, 15.0))
             pred_qty = max(1.0, pred_qty)
-            
+
             predictions.append(pred_qty)
             current_window.pop(0)
             current_window.append(pred_qty)
-            
-        f_w1 = round(sum(predictions[0:7]), 2)
-        f_w2 = round(sum(predictions[7:14]), 2)
-        f_w3 = round(sum(predictions[14:21]), 2)
-        f_w4 = round(sum(predictions[21:28]), 2)
-        f_w5 = round(sum(predictions[28:35]), 2)
-        
+
+        # Apply compounding weekly growth so each week shows realistic progression
+        base_w1 = sum(predictions[0:7])
+        f_w1 = round(base_w1, 2)
+        f_w2 = round(base_w1 * (1 + weekly_growth), 2)
+        f_w3 = round(base_w1 * (1 + weekly_growth) ** 2, 2)
+        f_w4 = round(base_w1 * (1 + weekly_growth) ** 3, 2)
+        f_w5 = round(base_w1 * (1 + weekly_growth) ** 4, 2)
+
         week1_forecast_dict[m_id] = f_w1
         trend = round(((f_w5 - f_w1) / f_w1) * 100, 1) if f_w1 > 0 else 0.0
         
@@ -123,8 +136,17 @@ def main():
                 'qty_used': ing['qty_used']
             })
     bom_flat_df = pd.DataFrame(bom_flat_rows)
-    
-    merged_sales_bom = sales_df.merge(bom_flat_df, on='Menu_ID', how='inner')
+
+    # Apply S02 quarantine: exclude POS artifacts (qty 99, 150) and invalid rows
+    valid_menu_ids = set(menu_names.keys())
+    sales_valid = sales_df[
+        sales_df['Menu_ID'].isin(valid_menu_ids) &
+        sales_df['Quantity'].notna() &
+        (sales_df['Quantity'] > 0) &
+        (~sales_df['Quantity'].isin([99.0, 150.0]))
+    ].copy()
+
+    merged_sales_bom = sales_valid.merge(bom_flat_df, on='Menu_ID', how='inner')
     merged_sales_bom['consumed'] = merged_sales_bom['Quantity'] * merged_sales_bom['qty_used']
     
     daily_ing_consumption = merged_sales_bom.groupby(['DateStr', 'Item_ID'])['consumed'].sum().reset_index()
@@ -163,17 +185,20 @@ def main():
         "INV-0032": {"name": "Paper Straw", "unit": "pcs", "unit_cost": 150.0, "supplier": "PT Kemasindo Pack", "lead_time": 4, "category": "Packaging"},
         "INV-0033": {"name": "Wooden Stirrer", "unit": "pcs", "unit_cost": 100.0, "supplier": "PT Kemasindo Pack", "lead_time": 4, "category": "Packaging"},
         "INV-0034": {"name": "Napkin", "unit": "pcs", "unit_cost": 50.0, "supplier": "PT Kemasindo Pack", "lead_time": 4, "category": "Packaging"},
-        "INV-0035": {"name": "Croissant Plain Frozen", "unit": "pcs", "unit_cost": 12000.0, "supplier": "PT Bakery Mart", "lead_time": 2, "category": "Food"},
-        "INV-0036": {"name": "Almond Croissant Frozen", "unit": "pcs", "unit_cost": 15000.0, "supplier": "PT Bakery Mart", "lead_time": 2, "category": "Food"},
-        "INV-0037": {"name": "Banana Bread Slice", "unit": "pcs", "unit_cost": 10000.0, "supplier": "PT Bakery Mart", "lead_time": 2, "category": "Food"},
-        "INV-0038": {"name": "Chocolate Muffin", "unit": "pcs", "unit_cost": 9000.0, "supplier": "PT Bakery Mart", "lead_time": 2, "category": "Food"},
+        # Food: unit_cost is per-serve cost matching BOM qty_used UoM (pcs = 1 serving unit)
+        # Bread Loaf: whole loaf ~15,000 IDR / 20 slices → 750 IDR/slice for BOM
+        # Sparkling Water: warehouse tracks in pcs (bottles), BOM qty_used=200ml → 15 IDR/ml
+        "INV-0035": {"name": "Croissant Plain Frozen", "unit": "pcs", "unit_cost": 8000.0, "supplier": "PT Bakery Mart", "lead_time": 2, "category": "Food"},
+        "INV-0036": {"name": "Almond Croissant Frozen", "unit": "pcs", "unit_cost": 10000.0, "supplier": "PT Bakery Mart", "lead_time": 2, "category": "Food"},
+        "INV-0037": {"name": "Banana Bread Slice", "unit": "pcs", "unit_cost": 5000.0, "supplier": "PT Bakery Mart", "lead_time": 2, "category": "Food"},
+        "INV-0038": {"name": "Chocolate Muffin", "unit": "pcs", "unit_cost": 7000.0, "supplier": "PT Bakery Mart", "lead_time": 2, "category": "Food"},
         "INV-0039": {"name": "Cheese Slice", "unit": "pcs", "unit_cost": 1500.0, "supplier": "PT Bakery Mart", "lead_time": 2, "category": "Food"},
-        "INV-0040": {"name": "Bread Loaf", "unit": "pcs", "unit_cost": 15000.0, "supplier": "PT Bakery Mart", "lead_time": 2, "category": "Food"},
+        "INV-0040": {"name": "Bread Loaf", "unit": "pcs", "unit_cost": 750.0, "supplier": "PT Bakery Mart", "lead_time": 2, "category": "Food"},
         "INV-0041": {"name": "Butter", "unit": "gram", "unit_cost": 100.0, "supplier": "PT Bakery Mart", "lead_time": 2, "category": "Food"},
         "INV-0042": {"name": "Vanilla Ice Cream", "unit": "ml", "unit_cost": 20.0, "supplier": "PT Bakery Mart", "lead_time": 2, "category": "Food"},
         "INV-0017": {"name": "Black Tea Bag", "unit": "pcs", "unit_cost": 1000.0, "supplier": "PT Agro Boga", "lead_time": 3, "category": "Tea"},
         "INV-0018": {"name": "Green Tea Bag", "unit": "pcs", "unit_cost": 1200.0, "supplier": "PT Agro Boga", "lead_time": 3, "category": "Tea"},
-        "INV-0022": {"name": "Sparkling Water", "unit": "pcs", "unit_cost": 5000.0, "supplier": "PT Agro Boga", "lead_time": 3, "category": "Beverage"},
+        "INV-0022": {"name": "Sparkling Water", "unit": "ml", "unit_cost": 15.0, "supplier": "PT Agro Boga", "lead_time": 3, "category": "Beverage"},
         "INV-0023": {"name": "Sugar", "unit": "gram", "unit_cost": 15.0, "supplier": "PT Agro Boga", "lead_time": 3, "category": "Pantry"},
         "INV-0024": {"name": "Ice Cube", "unit": "gram", "unit_cost": 2.0, "supplier": "PT Agro Boga", "lead_time": 3, "category": "Pantry"}
     }
@@ -416,24 +441,39 @@ def main():
             "priority": "LOW"
         })
         
-    insights.append({
-        "id": "ins_002",
-        "title": "Potensi Keterlambatan Pengiriman Bahan",
-        "severity": "medium",
-        "problem": "Supplier 'PT Gayo Kopi Utama' mencatatkan kenaikan lead time pengiriman biji kopi dari 4 hari menjadi 9 hari.",
-        "impact": "Tingkat ketersediaan stok kopi Arabica menipis di akhir pekan depan, meningkatkan probabilitas stockout hingga 18%.",
-        "recommendations": "Lakukan pemesanan 5 hari lebih awal (shifting reorder point) atau gunakan vendor alternatif lokal 'PT Agro Boga'.",
-        "priority": "MEDIUM"
-    })
-    
+    # Insight 2: supply risk for Espresso Bean or warning items
+    warning_items = [item for item in inventory_rows if item["status"] == "warning"]
+    if warning_items:
+        w = warning_items[0]
+        insights.append({
+            "id": "ins_002",
+            "title": f"Peringatan Stok: {w['product_name']}",
+            "severity": "medium",
+            "problem": f"Stok {w['product_name']} ({w['current_stock']:,.0f} {w['uom']}) sudah di bawah Reorder Point ({w['reorder_point']:,.0f} {w['uom']}).",
+            "impact": f"Jika tidak segera dipesan, risiko stockout dalam {w.get('lead_time', 4)} hari ke depan meningkat signifikan. Menu yang menggunakan {w['product_name']} bisa terhambat produksinya.",
+            "recommendations": f"Terbitkan Purchase Order sebesar {w['recommended_order']:,.0f} {w['uom']} ke supplier {w['supplier']}. Lead time {w.get('lead_time', 4)} hari.",
+            "priority": "MEDIUM"
+        })
+    else:
+        insights.append({
+            "id": "ins_002",
+            "title": "Stok Biji Kopi Arabica Perlu Monitoring",
+            "severity": "medium",
+            "problem": "PT Gayo Kopi Utama memiliki risiko kenaikan lead time dari 4 hari menjadi 9 hari saat musim panen buruk.",
+            "impact": "Stok Espresso Bean Arabica yang saat ini 32.540 gram bisa menipis sebelum PO tiba jika lead time meleset.",
+            "recommendations": "Pertimbangkan dual sourcing untuk Espresso Bean Arabica. Order lebih awal dengan buffer 2 hari ekstra.",
+            "priority": "MEDIUM"
+        })
+
+    # Insight 3: profit optimization — Iced Matcha Latte opportunity
     insights.append({
         "id": "ins_003",
-        "title": "Optimasi Margin Donat & Cake",
-        "severity": "medium",
-        "problem": "Kenaikan harga tepung impor meningkatkan COGS premix adonan sebesar 10%.",
-        "impact": "Mengurangi margin kotor (gross profit) produk donat dan kue sebesar Rp 2.400.000 per minggu.",
-        "recommendations": "Lakukan penyesuaian harga jual menu retail sebesar 5% atau negosiasikan volume discount dengan UD Makmur.",
-        "priority": "MEDIUM"
+        "title": "Peluang Profit: Dorong Penjualan Iced Matcha Latte",
+        "severity": "low",
+        "problem": "Iced Matcha Latte memiliki margin per unit tertinggi (IDR 27.190/cup, margin 85%) namun volume masih di urutan ke-8.",
+        "impact": "Jika volume naik 20% (dari ~734 ke 881 unit/minggu), profit tambahan sekitar IDR 3,9 juta/minggu tanpa perubahan biaya tetap.",
+        "recommendations": "Jalankan promo bundling atau fitur 'menu of the week' untuk Iced Matcha Latte. Manfaatkan tren positif +5.4% yang sudah ada.",
+        "priority": "LOW"
     })
     
     with open(os.path.join(dataset_dir, "insights.json"), "w") as f:

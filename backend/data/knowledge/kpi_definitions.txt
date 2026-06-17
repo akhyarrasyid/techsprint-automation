@@ -1,37 +1,56 @@
-# KPI Definitions — Key Performance Indicator Knowledge Base
+# KPI Definitions — Kopikita Roastery Key Performance Indicators
 
-## Service Level
-Service Level mengukur kemampuan perusahaan memenuhi permintaan pelanggan dari stok yang tersedia. Rumus: Service Level = (1 - Stockout Events / Total Demand Events) × 100%. Target industri manufaktur FMCG: ≥95%. Service level di bawah 90% mengindikasikan masalah serius pada inventory planning atau supplier reliability. Setiap penurunan 1% service level berpotensi mengurangi customer satisfaction score sebesar 2-3 poin.
+## KPI Aktual Kopikita (Hasil Pipeline)
+| KPI                 | Nilai Aktual | Target | Status  |
+|---------------------|--------------|--------|---------|
+| Service Level       | 100%         | ≥95%   | HEALTHY |
+| Fill Rate           | 96.5%        | ≥97%   | WARNING |
+| Forecast Accuracy   | 82.4%        | ≥85%   | WARNING |
+| Inventory Turnover  | 7.2x/tahun   | ≥8x    | WARNING |
+| Supplier Reliability| 89.1%        | ≥90%   | WARNING |
+| Gross Margin        | 76.95%       | ≥30%   | HEALTHY |
+| Total Revenue       | IDR 399 juta | -      | HEALTHY |
+| Total Profit        | IDR 307 juta | -      | HEALTHY |
 
-## Fill Rate
-Fill Rate mengukur persentase unit yang berhasil dipenuhi dari total unit yang dipesan. Berbeda dengan service level yang mengukur event, fill rate mengukur volume. Rumus: Fill Rate = (Total Unit Terpenuhi / Total Unit Dipesan) × 100%. Fill rate 98% berarti dari 1000 unit yang dipesan, 980 unit berhasil dikirim tepat waktu. Target: ≥97%.
+## Penjelasan KPI Kopikita
 
-## Inventory Turnover
-Inventory Turnover mengukur seberapa cepat persediaan terjual dan diganti dalam periode tertentu. Rumus: Inventory Turnover = COGS / Average Inventory Value. Turnover tinggi (>12x per tahun) menunjukkan manajemen persediaan yang efisien namun berisiko stockout. Turnover rendah (<4x per tahun) menandakan overstock atau slow-moving inventory yang mengikat modal kerja.
+### Service Level (100%)
+Mengukur kemampuan memenuhi permintaan dari stok yang tersedia.
+Rumus: (1 - Stockout Events / Total Demand Events) × 100%
+Kopikita: 100% — tidak ada stockout yang terjadi dalam periode historis.
 
-## Days of Inventory (DOI)
-Days of Inventory = 365 / Inventory Turnover. DOI menunjukkan berapa hari rata-rata persediaan bertahan sebelum terjual habis. DOI optimal bergantung pada industri: FMCG (15-30 hari), manufaktur (30-60 hari), heavy industry (60-90 hari). DOI yang terlalu rendah meningkatkan risiko stockout, terlalu tinggi meningkatkan holding cost.
+### Fill Rate (96.5% — WARNING)
+Persentase unit yang berhasil dipenuhi dari total unit dipesan.
+Target ≥97%. Kopikita berada di 96.5% → perlu tingkatkan stok Ice Cube dan Sparkling Water.
 
-## Forecast Accuracy
-Forecast Accuracy mengukur ketepatan prediksi permintaan terhadap aktual. Rumus: Forecast Accuracy = 1 - |Actual - Forecast| / Actual × 100%. MAPE (Mean Absolute Percentage Error) di bawah 20% dianggap acceptable, di bawah 10% dianggap excellent. Model ensemble (LightGBM + CatBoost + Neural Network) pada sistem ini menghasilkan MAPE ~12-15%.
+### Forecast Accuracy (82.4% — WARNING)
+Ketepatan prediksi vs aktual. Target ≥85%.
+Model DOW autoregresif Kopikita mencapai 82.4% — cukup baik untuk horizon 5 minggu.
+MAPE ~12-15% (wajar untuk minuman specialty coffee dengan variasi harian tinggi).
 
-## Stockout Probability
-Stockout Probability dihitung menggunakan simulasi Monte Carlo berdasarkan: variabilitas permintaan (demand std dev), variabilitas lead time (lead time std dev), dan level safety stock saat ini. P(stockout) < 5% = aman, 5-15% = waspada, >15% = kritis. Digital Twin simulator BPAS menjalankan 1000 iterasi Monte Carlo untuk estimasi probabilitas stockout per produk.
+### Inventory Turnover (7.2x — WARNING)
+Seberapa cepat stok terjual dan diganti per tahun.
+Rumus: COGS / Average Inventory Value = 7.2 kali/tahun.
+Target ≥8x. Produk segar seperti Fresh Milk harus turnover dalam 5 hari!
 
-## Supplier Reliability Index
-Supplier Reliability = (On-Time Deliveries / Total Deliveries) × 100%. Supplier dengan reliability ≥95% dikategorikan Tier 1 (preferred), 85-94% Tier 2 (acceptable), <85% Tier 3 (at risk). Index ini mempengaruhi safety stock calculation: supplier Tier 3 memerlukan safety stock 30-50% lebih tinggi.
+### Supplier Reliability (89.1% — WARNING)
+Persentase pengiriman tepat waktu dari semua supplier.
+Target ≥90%. PT Matcha Import (88%) menjadi penekan utama karena reliability terendah.
 
-## Gross Margin
-Gross Margin = (Revenue - COGS) / Revenue × 100%. Gross margin mengukur profitabilitas produk sebelum biaya operasional. Target gross margin minimum: 25% untuk commodity products, 35% untuk value-added products, 50% untuk specialty products. Produk dengan gross margin di bawah 20% perlu dievaluasi: naikkan harga jual atau cari supplier bahan baku alternatif.
+### Gross Margin (77% — HEALTHY)
+Rumus: (Revenue - COGS) / Revenue × 100% = 77%
+Sangat baik untuk standar F&B Indonesia (rata-rata industri 55–70%).
+Menu minuman margin 75–85%; makanan margin 55–65%.
 
-## Net Margin
-Net Margin = (Revenue - COGS - Operating Expenses) / Revenue × 100%. Net margin memperhitungkan semua biaya termasuk holding cost, ordering cost, transportation, overhead, dan marketing. Target net margin healthy: ≥10% untuk industri manufaktur makanan. Net margin negatif mengindikasikan produk yang perlu dihentikan atau dire-engineering.
+## Pertanyaan yang Sering Ditanya
+Q: Berapa gross margin Kopikita?
+A: 76.95% atau dibulatkan 77% — jauh di atas target 30% dan di atas rata-rata industri F&B.
 
-## Cash-to-Cash Cycle
-Cash-to-Cash Cycle = Days of Inventory + Days Sales Outstanding - Days Payable Outstanding. Mengukur berapa lama modal kerja terikat dalam siklus operasional. Semakin pendek siklus, semakin efisien penggunaan modal. Optimasi meliputi: mempercepat inventory turnover, mempercepat penagihan piutang, dan memperpanjang tenor pembayaran ke supplier.
+Q: KPI mana yang perlu diperhatikan?
+A: Fill Rate (96.5% vs target 97%), Forecast Accuracy (82.4% vs 85%), dan Supplier Reliability (89.1% vs 90%) semua dalam status WARNING.
 
-## Overall Equipment Effectiveness (OEE)
-OEE = Availability × Performance × Quality. Availability: persentase waktu mesin beroperasi. Performance: kecepatan aktual vs kecepatan ideal. Quality: persentase produk yang memenuhi standar. OEE ≥85% dianggap world-class. Relevan untuk capacity planning dan production scheduling.
+Q: Apakah ada risiko stockout?
+A: Stockout Probability 0% untuk periode historis. Namun Bread Loaf saat ini CRITICAL — jika tidak diorder segera, akan stockout.
 
-## Perfect Order Rate
-Perfect Order Rate mengukur persentase order yang dikirim: tepat waktu, lengkap, tanpa kerusakan, dan dengan dokumentasi akurat. Target: ≥95%. Setiap komponen dikalikan: Perfect Order Rate = On-Time % × In-Full % × Damage-Free % × Documentation Accurate %. Ini adalah KPI holistik yang mencerminkan keseluruhan supply chain performance.
+Q: Berapa inventory turnover Kopikita?
+A: 7.2 kali per tahun, sedikit di bawah target 8x. Perlu efisiensi stok khususnya untuk bahan-bahan slow-moving.

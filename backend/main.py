@@ -17,7 +17,7 @@ from routers import (
     explainability_router,
     copilot_router,
     digital_twin_router,
-    optimization_router,
+    upload_router,
     kpi_router,
     anomaly_router,
     command_center_router,
@@ -26,14 +26,21 @@ from services.pipeline_store import PipelineStore
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Warm up store cache with mock/deterministic data on startup
-    try:
-        PipelineStore.get_results("Base")
-        print("Pipeline store initialized successfully with base mock data.")
-    except Exception as e:
-        print(f"Failed to initialize pipeline store on startup: {e}")
+    # Check if pre-computed result files are present; warn if not
+    import os as _os
+    dataset_dir = _os.path.join(_os.path.dirname(_os.path.abspath(__file__)), "dataset")
+    required = ["forecast_result.csv", "inventory_result.csv", "mrp_result.csv",
+                "profitability_result.csv", "kpi_result.csv", "insights.json"]
+    missing = [f for f in required if not _os.path.exists(_os.path.join(dataset_dir, f))]
+    if missing:
+        print(f"[WARN] Pipeline not yet run. Missing: {missing}. Upload data to generate.")
+    else:
+        try:
+            PipelineStore.get_results("Base")
+            print("[OK] Pipeline store initialized with dataset-driven results.")
+        except Exception as e:
+            print(f"[WARN] Pipeline store init failed: {e}")
     yield
-    # Shutdown actions
     PipelineStore.clear_cache()
     print("Pipeline cache cleared.")
 
@@ -54,16 +61,15 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Health endpoint (as specified in architectural decisions)
+# Health endpoint
 @app.get("/health", tags=["Health"])
 async def get_health():
-    active_model = os.getenv("MODEL_NAME", "mock")
     env = os.getenv("ENVIRONMENT", "development")
     return {
         "status": "ok",
         "pipeline": "ready",
         "environment": env,
-        "model": active_model
+        "model": "kopikita-pipeline-v1"
     }
 
 # Register routers at root level for flat endpoint layout
@@ -76,8 +82,7 @@ app.include_router(insights_router.router)
 app.include_router(explainability_router.router)
 app.include_router(copilot_router.router)
 app.include_router(digital_twin_router.router)
-app.include_router(optimization_router.router)
-# Phase 13-25 routers
+app.include_router(upload_router.router)
 app.include_router(kpi_router.router)
 app.include_router(anomaly_router.router)
 app.include_router(command_center_router.router)

@@ -43,6 +43,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     'kpi': 'KPI Engine',
     'anomalies': 'Anomaly Detection',
     'command-center': 'Executive Command Center',
+    'upload': 'Upload Data & Pipeline',
   };
 
   return (

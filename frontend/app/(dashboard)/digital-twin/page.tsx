@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo, Suspense } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { safeProfitabilityReport, safeDashboardSummary } from '../../../lib/mock';
+import { fetchProfitability } from '../../../lib/api';
 import { MetricCard } from '../../../components/metric-card';
 import {
   DollarSign,
@@ -76,15 +76,11 @@ function DigitalTwinContent() {
     sellingPrice: 0,
   });
 
-  const { data: baseReport } = useQuery({
-    queryKey: ['profitability-report', 'Base'],
-    queryFn: () => safeProfitabilityReport('Base'),
+  const { data: profitItems } = useQuery({
+    queryKey: ['profitability', 'Base'],
+    queryFn: () => fetchProfitability('Base'),
   });
 
-  const { data: baseSummary } = useQuery({
-    queryKey: ['dashboard-summary', 'Base'],
-    queryFn: () => safeDashboardSummary('Base'),
-  });
 
   const updateParam = (id: string, value: number) => {
     setParams(prev => ({ ...prev, [id]: value }));
@@ -96,10 +92,12 @@ function DigitalTwinContent() {
 
   // ── SIMULATION ENGINE ──
   const simulation = useMemo(() => {
-    const base = baseReport?.scenarios?.find(s => s.name === 'Base');
-    const summary = baseSummary;
+    const baseRevenue = profitItems?.reduce((s, p) => s + p.estimated_revenue, 0) ?? 0;
+    const baseCOGS = profitItems?.reduce((s, p) => s + p.estimated_cost, 0) ?? 0;
+    const baseProfit = profitItems?.reduce((s, p) => s + p.estimated_profit, 0) ?? 0;
+    const baseMargin = baseRevenue > 0 ? (baseProfit / baseRevenue) * 100 : 0;
 
-    if (!base || !summary) {
+    if (!profitItems?.length) {
       return {
         revenue: 0, profit: 0, margin: 0, serviceLevel: 98,
         stockoutRisk: 0, holdingCost: 0, delta: { revenue: 0, profit: 0, margin: 0, serviceLevel: 0 }
@@ -110,24 +108,21 @@ function DigitalTwinContent() {
     const costMultiplier = 1 + (params.materialCost / 100);
     const priceMultiplier = 1 + (params.sellingPrice / 100);
 
-    const revenue = base.total_revenue * demandMultiplier * priceMultiplier;
-    const cogs = base.total_cogs * demandMultiplier * costMultiplier;
+    const revenue = baseRevenue * demandMultiplier * priceMultiplier;
+    const cogs = baseCOGS * demandMultiplier * costMultiplier;
     const profit = revenue - cogs;
     const margin = revenue > 0 ? (profit / revenue) * 100 : 0;
 
-    // Service level: drops with increased lead time and high demand
     const baseSL = 98;
     const leadTimePenalty = Math.max(0, (params.leadTime - 4) * 3.2);
     const demandPenalty = params.demand > 20 ? (params.demand - 20) * 0.5 : 0;
     const serviceLevel = Math.max(50, baseSL - leadTimePenalty - demandPenalty);
 
-    // Stockout risk: increases with high demand and high lead time
     const stockoutRisk = params.demand > 10 && params.leadTime > 5 ? 3
       : params.demand > 10 || params.leadTime > 6 ? 2
       : params.leadTime > 4 ? 1 : 0;
 
-    // Holding cost: increases with lead time
-    const holdingCost = base.holding_cost * (1 + (params.leadTime - 4) * 0.12);
+    const holdingCost = baseCOGS * 0.15 * (1 + (params.leadTime - 4) * 0.12);
 
     return {
       revenue: Math.round(revenue),
@@ -137,13 +132,13 @@ function DigitalTwinContent() {
       stockoutRisk,
       holdingCost: Math.round(holdingCost),
       delta: {
-        revenue: Math.round(revenue - base.total_revenue),
-        profit: Math.round(profit - base.gross_profit),
-        margin: Math.round((margin - base.margin_pct) * 10) / 10,
+        revenue: Math.round(revenue - baseRevenue),
+        profit: Math.round(profit - baseProfit),
+        margin: Math.round((margin - baseMargin) * 10) / 10,
         serviceLevel: Math.round((serviceLevel - baseSL) * 10) / 10,
       }
     };
-  }, [params, baseReport, baseSummary]);
+  }, [params, profitItems]);
 
   const formatIDR = (val: number) => {
     return new Intl.NumberFormat('id-ID', {

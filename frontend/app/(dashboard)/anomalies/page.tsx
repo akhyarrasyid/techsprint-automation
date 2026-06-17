@@ -1,7 +1,10 @@
 'use client';
-import React, { useState, useEffect, Suspense } from 'react';
+import React, { Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { safeAnomalies } from '../../../lib/mock';
+import { useQuery } from '@tanstack/react-query';
+import { fetchAnomalies } from '../../../lib/api';
+import ErrorBanner from '../../../components/error-banner';
+import EmptyState from '../../../components/empty-state';
 import { AlertTriangle, TrendingUp, TrendingDown, Zap, Truck, Package, ShieldAlert } from 'lucide-react';
 
 const TYPE_CONFIG: Record<string, { icon: any; color: string; bg: string; label: string }> = {
@@ -15,21 +18,27 @@ const TYPE_CONFIG: Record<string, { icon: any; color: string; bg: string; label:
 function AnomalyContent() {
   const searchParams = useSearchParams();
   const scenario = searchParams.get('scenario') || 'Base';
-  const [data, setData] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    setLoading(true);
-    safeAnomalies(scenario).then(setData).catch(() => setData(null)).finally(() => setLoading(false));
-  }, [scenario]);
+  const { data, isLoading, error, refetch } = useQuery({
+    queryKey: ['anomalies', scenario],
+    queryFn: () => fetchAnomalies(scenario),
+  });
 
-  if (loading) return <div className="space-y-4">{Array(4).fill(0).map((_, i) => <div key={i} className="h-24 bg-white rounded-2xl animate-pulse" />)}</div>;
-  if (!data) return <div className="bg-white rounded-2xl p-8 text-center text-slate-400 font-medium text-sm">Tidak ada data tersedia.</div>;
+  if (isLoading) {
+    return <div className="space-y-4">{Array(4).fill(0).map((_, i) => <div key={i} className="h-24 bg-white rounded-2xl animate-pulse" />)}</div>;
+  }
+
+  if (error) {
+    return <ErrorBanner message={(error as Error).message} onRetry={refetch} />;
+  }
+
+  if (!data) {
+    return <EmptyState title="Belum ada data anomali" description="Upload file sales history dan jalankan pipeline terlebih dahulu." />;
+  }
 
   const summary = data.summary;
   return (
     <div className="space-y-6">
-      {/* Summary Cards */}
       <div className="grid grid-cols-4 gap-4">
         <div className="bg-white rounded-2xl border border-slate-100 p-5">
           <p className="text-[11px] font-semibold text-slate-500 mb-1">Total Anomalies</p>
@@ -49,7 +58,6 @@ function AnomalyContent() {
         </div>
       </div>
 
-      {/* Anomaly List */}
       <div className="space-y-3">
         {data.anomalies.length === 0 ? (
           <div className="bg-emerald-50 rounded-2xl p-8 text-center">
@@ -59,7 +67,7 @@ function AnomalyContent() {
           </div>
         ) : (
           data.anomalies.map((a: any, idx: number) => {
-            const cfg = TYPE_CONFIG[a.type] || TYPE_CONFIG.outlier_demand;
+            const cfg = TYPE_CONFIG[a.type] ?? TYPE_CONFIG.outlier_demand;
             const Icon = cfg.icon;
             return (
               <div key={idx} className="bg-white rounded-2xl border border-slate-100 p-5 hover:shadow-md transition-shadow">
@@ -90,5 +98,9 @@ function AnomalyContent() {
 }
 
 export default function AnomaliesPage() {
-  return (<Suspense fallback={<div className="space-y-4">{Array(4).fill(0).map((_, i) => <div key={i} className="h-24 bg-white rounded-2xl animate-pulse" />)}</div>}><AnomalyContent /></Suspense>);
+  return (
+    <Suspense fallback={<div className="space-y-4">{Array(4).fill(0).map((_, i) => <div key={i} className="h-24 bg-white rounded-2xl animate-pulse" />)}</div>}>
+      <AnomalyContent />
+    </Suspense>
+  );
 }

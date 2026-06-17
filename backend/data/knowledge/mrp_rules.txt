@@ -1,25 +1,58 @@
-# MRP Rules — Material Requirements Planning Knowledge Base
+# MRP Rules — Kopikita Roastery Material Requirements Planning
 
-## Bill of Materials (BOM)
-BOM mendefinisikan komposisi material yang dibutuhkan untuk memproduksi satu unit produk jadi. Contoh: 1 unit Tepung Protein Tinggi membutuhkan 0.8 kg Gandum, 0.15 kg Additives, dan 0.05 kg Packaging. BOM bertingkat (multi-level) menunjukkan sub-assembly requirements.
+## Struktur BOM Kopikita
+- 25 menu aktif × 42 bahan baku SKU = 121 baris MRP aktif
+- BOM mendefinisikan qty_used (berapa gram/ml bahan per porsi menu)
+- Gross Requirement = forecast_demand × qty_used per BOM row
+- Shortage = max(0, gross_requirement - current_stock)
 
-## MRP Calculation
-Gross Requirement = forecast_demand × BOM_ratio_per_unit. Net Requirement = max(0, gross_requirement - current_stock_material). Shortage terjadi jika net_requirement > 0. Setiap shortage harus ditangani dengan Purchase Order ke supplier terkait.
+## S02 Quarantine Filter (Penting!)
+Transaksi dengan Quantity 99 dan 150 adalah artefak bug sistem POS, bukan penjualan nyata.
+Sudah diexclude dari BOM explosion untuk mencegah gross requirement yang terlalu besar.
 
-## Material Shortage Analysis
-Shortage konsolidasi dilakukan per material_id, bukan per produk. Ini karena satu material bisa digunakan oleh beberapa produk (shared material). Contoh: Gandum digunakan oleh semua varian tepung. Total shortage Gandum = sum shortage dari PRD001 + PRD002 + PRD003.
+## Contoh BOM Kopikita
+Kopi Susu Gula Aren (MENU-010) per 1 cup:
+- Espresso Bean Arabica: 18 gram
+- Fresh Milk: 150 ml
+- Gula Aren Syrup: 25 ml
+- Ice Cube: 200 gram
+- Cup + Lid: 1 pcs
 
-## Supplier Lead Time
-Lead time adalah waktu antara PO diterbitkan hingga material tiba di gudang. Lead time bervariasi per supplier: UD Makmur (4 hari), PT Cargill (5 hari), CV Gemilang (3 hari). Lead time yang lebih panjang membutuhkan safety stock material yang lebih besar.
+## Top Shortage Bahan Baku Aktual
+1. Ice Cube (INV-0024): Shortage 83.896 gram (digunakan oleh banyak menu iced drinks)
+2. Ice Cube: Shortage 58.054 gram (dari menu berbeda)
+3. Sparkling Water (INV-0022): Shortage 23.627 ml | biaya order IDR 354.402
+4. Vanilla Ice Cream (INV-0042): Shortage 12.706 ml | biaya order IDR 254.122
+5. Gula Aren Syrup (INV-0012): Shortage 11.825 ml | biaya order IDR 236.496
 
-## Delivery Schedule Planning
-Delivery schedule harus mempertimbangkan: (1) tanggal PO release = hari ini, (2) expected delivery = PO release + lead_time, (3) production start = delivery date + 1 hari (quality check). Jika material terlambat, seluruh jadwal produksi bergeser.
+## Supplier Bahan Baku Kritis
+- PT Gayo Kopi Utama: Espresso Bean Arabica, Robusta Bean, Decaf Bean
+  Lead time: 4 hari | Reliability: 92%
+- PT Agro Boga: Ice Cube, Sparkling Water
+  Lead time: 3 hari
+- PT Sweetener Indonesia: Gula Aren Syrup
+  Lead time: 3 hari
+- PT Bakery Mart: Bread Loaf, Croissant, Butter, Almond
+  Lead time: 1 hari
 
-## Material Priority Classification
-Material diprioritaskan berdasarkan: (1) shortage severity (unit), (2) number of products affected, (3) supplier lead time. Material dengan shortage tertinggi dan lead time terpanjang mendapat prioritas PO pertama.
+## Dampak Keterlambatan Supplier
+Jika supplier Ice Cube terlambat 5 hari:
+- Menu terdampak: Iced Americano, Iced Latte, Kopi Susu Gula Aren, Caramel Macchiato, dll (semua menu iced)
+- Revenue at risk: besar sekali karena mayoritas menu Kopikita adalah minuman iced
 
-## Lot Sizing
-Jumlah order harus memenuhi MOQ (Minimum Order Quantity) supplier. Jika shortage = 500 unit tapi MOQ = 1000 unit, maka PO harus 1000 unit. Kelebihan disimpan sebagai safety stock material.
+## Cara Baca MRP Table
+- qty_required: jumlah bahan yang dibutuhkan untuk memenuhi forecast demand
+- current_stock: stok gudang saat ini
+- shortage: selisih (negatif = perlu order)
+- order_cost: estimasi biaya pembelian untuk menutup shortage
+- expected_arrival: tanggal estimasi material tiba (hari ini + lead_time)
 
-## MRP Nervousness
-Perubahan forecast yang sering menyebabkan MRP nervousness dimana PO berubah-ubah. Untuk mengurangi ini, digunakan time fence: perubahan dalam 1 minggu pertama di-freeze, hanya minggu 2-5 yang boleh diubah.
+## Pertanyaan yang Sering Ditanya
+Q: Material apa yang paling banyak shortage?
+A: Ice Cube memiliki shortage terbesar karena digunakan hampir semua menu iced drink Kopikita.
+
+Q: Berapa total biaya pengadaan bahan baku yang shortage?
+A: Total procurement cost dapat dilihat di halaman MRP — estimasi total shortage Sparkling Water saja IDR 354.402.
+
+Q: Jika supplier terlambat 7 hari, apa yang terjadi?
+A: Service level turun, menu iced drinks tidak bisa diproduksi. Disarankan buffer stock 2× lipat untuk Ice Cube dan Sparkling Water.

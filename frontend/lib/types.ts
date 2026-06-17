@@ -43,6 +43,12 @@ export interface ProductInventory {
   recommended_order_qty?: number;
   estimated_cost?: number;
   status: string;
+  uom?: string;
+  supplier_uom?: string;
+  supplier?: string;
+  category?: string;
+  unit_cost?: number;
+  lead_time?: number;
 }
 
 export interface RawMaterialRequirement {
@@ -151,5 +157,35 @@ export interface ExplainabilityReport {
   feature_importance: FeatureImportance[];
   shap_values: SHAPValue[];
   waterfall_data: WaterfallItem[];
+  model_info?: {
+    name: string;
+    top_menu: string;
+    top_forecast_qty: number;
+    overall_mean_qty: number;
+    cv_score: number;
+  };
+}
+
+export interface UploadResponse {
+  status: 'success' | 'error';
+  message: string;
+  file_saved: string;
+  files_generated: string[];
+  duration_seconds: number;
+  row_count: number;
+  date_range: string | null;
+  pipeline_summary: {
+    action_report_rows: number;
+    forecast_menus: number;
+    inventory_items: number;
+    mrp_rows: number;
+  };
+  stdout?: string;
+}
+
+export interface PipelineStatus {
+  ready: boolean;
+  last_run: string | null;
+  files: Record<string, { exists: boolean; last_modified: string | null }>;
 }
 

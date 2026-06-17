@@ -1,28 +1,41 @@
 'use client';
-import React, { useState, useEffect, Suspense } from 'react';
+import React, { Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { safeCommandCenter } from '../../../lib/mock';
-import { Command, Target, AlertTriangle, Lightbulb, ArrowRight, ShieldCheck, TrendingUp, DollarSign } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+import { fetchCommandCenter } from '../../../lib/api';
+import ErrorBanner from '../../../components/error-banner';
+import EmptyState from '../../../components/empty-state';
+import { AlertTriangle, Lightbulb, ArrowRight, ShieldCheck, TrendingUp, DollarSign } from 'lucide-react';
 
 function CommandCenterContent() {
   const searchParams = useSearchParams();
   const scenario = searchParams.get('scenario') || 'Base';
-  const [data, setData] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    setLoading(true);
-    safeCommandCenter(scenario).then(setData).catch(() => setData(null)).finally(() => setLoading(false));
-  }, [scenario]);
+  const { data, isLoading, error, refetch } = useQuery({
+    queryKey: ['command-center', scenario],
+    queryFn: () => fetchCommandCenter(scenario),
+  });
 
-  if (loading) return <div className="space-y-6"><div className="grid grid-cols-3 gap-4">{Array(6).fill(0).map((_, i) => <div key={i} className="h-28 bg-white rounded-2xl animate-pulse" />)}</div></div>;
-  if (!data) return <div className="bg-white rounded-2xl p-8 text-center text-slate-400 font-medium text-sm">Data belum tersedia.</div>;
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <div className="grid grid-cols-3 gap-4">{Array(6).fill(0).map((_, i) => <div key={i} className="h-28 bg-white rounded-2xl animate-pulse" />)}</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return <ErrorBanner message={(error as Error).message} onRetry={refetch} />;
+  }
+
+  if (!data) {
+    return <EmptyState title="Belum ada data Command Center" description="Upload file sales history dan jalankan pipeline terlebih dahulu." />;
+  }
 
   const statusColors: Record<string, string> = { good: '#059669', warning: '#F59E0B', critical: '#DC2626' };
 
   return (
     <div className="space-y-6">
-      {/* Global KPI Cards */}
       <div className="grid grid-cols-3 gap-4">
         {data.global_kpis?.map((kpi: any) => (
           <div key={kpi.id} className="bg-white rounded-2xl border border-slate-100 p-5 hover:shadow-md transition-shadow">
@@ -39,7 +52,6 @@ function CommandCenterContent() {
         ))}
       </div>
 
-      {/* Financial Summary */}
       <div className="grid grid-cols-4 gap-4">
         {[
           { label: 'Total Revenue', value: data.financial_summary?.total_revenue, icon: DollarSign, color: '#185FA5' },
@@ -61,9 +73,8 @@ function CommandCenterContent() {
       </div>
 
       <div className="grid grid-cols-2 gap-6">
-        {/* Risk Map */}
         <div className="bg-white rounded-2xl border border-slate-100 p-6">
-          <h3 className="text-sm font-bold text-slate-800 mb-4 flex items-center gap-2"><AlertTriangle className="w-4 h-4 text-red-500" />Risk Map ({data.risk_map?.length})</h3>
+          <h3 className="text-sm font-bold text-slate-800 mb-4 flex items-center gap-2"><AlertTriangle className="w-4 h-4 text-red-500" />Risk Map ({data.risk_map?.length ?? 0})</h3>
           <div className="space-y-3 max-h-64 overflow-y-auto">
             {data.risk_map?.map((r: any, idx: number) => (
               <div key={idx} className="p-3 rounded-xl bg-slate-50 border border-slate-100">
@@ -78,7 +89,6 @@ function CommandCenterContent() {
           </div>
         </div>
 
-        {/* Recommendations */}
         <div className="bg-white rounded-2xl border border-slate-100 p-6">
           <h3 className="text-sm font-bold text-slate-800 mb-4 flex items-center gap-2"><Lightbulb className="w-4 h-4 text-amber-500" />Rekomendasi</h3>
           <div className="space-y-3 max-h-64 overflow-y-auto">
@@ -99,7 +109,6 @@ function CommandCenterContent() {
         </div>
       </div>
 
-      {/* Priority Actions */}
       {data.priority_actions?.length > 0 && (
         <div className="bg-white rounded-2xl border border-slate-100 p-6">
           <h3 className="text-sm font-bold text-slate-800 mb-4 flex items-center gap-2"><ShieldCheck className="w-4 h-4 text-emerald-500" />Priority Actions</h3>
@@ -121,5 +130,9 @@ function CommandCenterContent() {
 }
 
 export default function CommandCenterPage() {
-  return (<Suspense fallback={<div className="grid grid-cols-3 gap-4">{Array(6).fill(0).map((_, i) => <div key={i} className="h-28 bg-white rounded-2xl animate-pulse" />)}</div>}><CommandCenterContent /></Suspense>);
+  return (
+    <Suspense fallback={<div className="grid grid-cols-3 gap-4">{Array(6).fill(0).map((_, i) => <div key={i} className="h-28 bg-white rounded-2xl animate-pulse" />)}</div>}>
+      <CommandCenterContent />
+    </Suspense>
+  );
 }

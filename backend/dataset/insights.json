@@ -1,29 +1,29 @@
 [
   {
     "id": "ins_001",
-    "title": "Critical Stockout Risk: Espresso Bean Arabica, Fresh Milk",
+    "title": "Critical Stockout Risk: Bread Loaf",
     "severity": "high",
-    "problem": "Stok gudang untuk bahan baku Espresso Bean Arabica, Fresh Milk berada di bawah batas aman Safety Stock.",
-    "impact": "Berpotensi menimbulkan kegagalan pemenuhan pesanan menu (loss-sales) dengan estimasi kerugian Rp 147,057,042.",
-    "recommendations": "Segera lakukan order pembelian darurat sejumlah 284,672.95 gram ke supplier PT Gayo Kopi Utama.",
+    "problem": "Stok gudang untuk bahan baku Bread Loaf berada di bawah batas aman Safety Stock.",
+    "impact": "Berpotensi menimbulkan kegagalan pemenuhan pesanan menu (loss-sales) dengan estimasi kerugian Rp 6,325,513.",
+    "recommendations": "Segera lakukan order pembelian darurat sejumlah 5,622.68 pcs ke supplier PT Bakery Mart.",
     "priority": "HIGH"
   },
   {
     "id": "ins_002",
-    "title": "Potensi Keterlambatan Pengiriman Bahan",
+    "title": "Peringatan Stok: Espresso Bean Arabica",
     "severity": "medium",
-    "problem": "Supplier 'PT Gayo Kopi Utama' mencatatkan kenaikan lead time pengiriman biji kopi dari 4 hari menjadi 9 hari.",
-    "impact": "Tingkat ketersediaan stok kopi Arabica menipis di akhir pekan depan, meningkatkan probabilitas stockout hingga 18%.",
-    "recommendations": "Lakukan pemesanan 5 hari lebih awal (shifting reorder point) atau gunakan vendor alternatif lokal 'PT Agro Boga'.",
+    "problem": "Stok Espresso Bean Arabica (32,540 gram) sudah di bawah Reorder Point (76,190 gram).",
+    "impact": "Jika tidak segera dipesan, risiko stockout dalam 4 hari ke depan meningkat signifikan. Menu yang menggunakan Espresso Bean Arabica bisa terhambat produksinya.",
+    "recommendations": "Terbitkan Purchase Order sebesar 222,382 gram ke supplier PT Gayo Kopi Utama. Lead time 4 hari.",
     "priority": "MEDIUM"
   },
   {
     "id": "ins_003",
-    "title": "Optimasi Margin Donat & Cake",
-    "severity": "medium",
-    "problem": "Kenaikan harga tepung impor meningkatkan COGS premix adonan sebesar 10%.",
-    "impact": "Mengurangi margin kotor (gross profit) produk donat dan kue sebesar Rp 2.400.000 per minggu.",
-    "recommendations": "Lakukan penyesuaian harga jual menu retail sebesar 5% atau negosiasikan volume discount dengan UD Makmur.",
-    "priority": "MEDIUM"
+    "title": "Peluang Profit: Dorong Penjualan Iced Matcha Latte",
+    "severity": "low",
+    "problem": "Iced Matcha Latte memiliki margin per unit tertinggi (IDR 27.190/cup, margin 85%) namun volume masih di urutan ke-8.",
+    "impact": "Jika volume naik 20% (dari ~734 ke 881 unit/minggu), profit tambahan sekitar IDR 3,9 juta/minggu tanpa perubahan biaya tetap.",
+    "recommendations": "Jalankan promo bundling atau fitur 'menu of the week' untuk Iced Matcha Latte. Manfaatkan tren positif +5.4% yang sudah ada.",
+    "priority": "LOW"
   }
 ]

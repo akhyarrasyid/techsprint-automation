@@ -51,13 +51,27 @@ class VectorStore:
             print(f"VectorStore saved: {self.index.ntotal} vectors -> {index_path}")
 
     def load(self, index_path: str = INDEX_PATH, texts_path: str = TEXTS_PATH) -> bool:
-        """Load FAISS index and texts from disk. Returns True if successful."""
-        import faiss
-        if os.path.exists(index_path) and os.path.exists(texts_path):
+        """Load texts (for keyword fallback) then FAISS index. Returns True if FAISS loaded."""
+        # Step 1: Always load texts first — they enable keyword fallback without FAISS
+        if os.path.exists(texts_path):
+            try:
+                with open(texts_path, "rb") as f:
+                    self.texts = pickle.load(f)
+                print(f"VectorStore: Loaded {len(self.texts)} text chunks for keyword fallback.")
+            except Exception as e:
+                print(f"VectorStore: Failed to load texts: {e}")
+
+        # Step 2: Try to load FAISS index (may be unavailable/corrupt)
+        if not os.path.exists(index_path):
+            print(f"VectorStore: No FAISS index found. Keyword-only mode with {len(self.texts)} texts.")
+            return False
+
+        try:
+            import faiss  # Import here, not at module level, to catch initialization errors
             self.index = faiss.read_index(index_path)
-            with open(texts_path, "rb") as f:
-                self.texts = pickle.load(f)
             print(f"VectorStore loaded: {self.index.ntotal} vectors from {index_path}")
             return True
-        print(f"VectorStore: No index found at {index_path}")
-        return False
+        except Exception as e:
+            print(f"VectorStore: FAISS unavailable ({e}). Keyword-only mode with {len(self.texts)} texts.")
+            self.index = None
+            return False

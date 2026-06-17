@@ -1,61 +1,102 @@
-import React from 'react';
-import { Sparkles, ArrowRight, Info } from 'lucide-react';
+'use client';
 
-export const AIInsightCard: React.FC = () => {
-  const insights = [
-    {
-      text: "Demand for Tepung Protein is expected to increase by 8.3%.",
-      type: "info"
-    },
-    {
-      text: "PRD004 has a potential stockout risk within the next 7 days.",
-      type: "warning"
-    },
-    {
-      text: "Supplier delay scenarios reduce service level from 98% to 82%.",
-      type: "danger"
-    },
-    {
-      text: "Consider placing purchase orders earlier to maintain fill rate.",
-      type: "success"
-    }
-  ];
+import React, { Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
+import { useQuery } from '@tanstack/react-query';
+import { Sparkles, AlertTriangle, TrendingUp, Lightbulb, Zap } from 'lucide-react';
+import { fetchInsights } from '../../lib/api';
+import type { AIInsight } from '../../lib/types';
 
-  const borderStyles = {
-    info: 'border-l-4 border-l-[#185FA5]',
-    warning: 'border-l-4 border-l-[#BA7517]',
-    danger: 'border-l-4 border-l-[#A32D2D]',
-    success: 'border-l-4 border-l-[#1D9E75]',
-  };
+const SEVERITY_STYLES: Record<string, string> = {
+  high: 'border-l-4 border-l-[#A32D2D]',
+  medium: 'border-l-4 border-l-[#BA7517]',
+  low: 'border-l-4 border-l-[#185FA5]',
+};
+
+const TYPE_ICON: Record<string, React.ElementType> = {
+  risk: AlertTriangle,
+  warning: Zap,
+  opportunity: TrendingUp,
+  action: Lightbulb,
+};
+
+function InsightList({ scenario }: { scenario: string }) {
+  const { data: insights, isLoading } = useQuery({
+    queryKey: ['insights', scenario],
+    queryFn: () => fetchInsights(scenario),
+    staleTime: 30_000,
+  });
+
+  if (isLoading) {
+    return (
+      <div className="space-y-3">
+        {Array.from({ length: 3 }).map((_, i) => (
+          <div key={i} className="h-14 bg-slate-50 rounded-lg animate-pulse" />
+        ))}
+      </div>
+    );
+  }
+
+  if (!insights?.length) {
+    return (
+      <p className="text-xs text-slate-400 text-center py-4">
+        Jalankan pipeline untuk melihat insights.
+      </p>
+    );
+  }
+
+  return (
+    <div className="space-y-3">
+      {insights.slice(0, 4).map((insight: AIInsight, idx: number) => {
+        const Icon = TYPE_ICON[insight.type] ?? Lightbulb;
+        return (
+          <div
+            key={idx}
+            className={`p-3 bg-slate-50/50 rounded-r-lg ${SEVERITY_STYLES[insight.severity] ?? SEVERITY_STYLES.low} flex items-start gap-2.5`}
+          >
+            <Icon className="w-4 h-4 text-slate-400 mt-0.5 shrink-0" />
+            <div>
+              <p className="text-slate-700 text-xs font-bold leading-tight">{insight.title}</p>
+              <p className="text-slate-500 text-[10px] font-medium leading-relaxed mt-0.5">
+                {insight.description}
+              </p>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function AIInsightCardInner() {
+  const searchParams = useSearchParams();
+  const scenario = searchParams.get('scenario') || 'Base';
 
   return (
     <div className="bg-white border border-slate-100 rounded-[20px] p-6 shadow-sm hover:shadow-md transition-all duration-200">
       <div className="flex items-center gap-2 mb-4">
-        <div className="p-1.5 bg-[#185FA5]/10 text-[#185FA5] rounded-lg animate-pulse">
+        <div className="p-1.5 bg-[#185FA5]/10 text-[#185FA5] rounded-lg">
           <Sparkles className="w-4 h-4" />
         </div>
-        <h3 className="font-bold text-slate-800 text-sm tracking-tight">
-          AI Supply Chain Insights
-        </h3>
+        <h3 className="font-bold text-slate-800 text-sm tracking-tight">AI Supply Chain Insights</h3>
       </div>
-      
-      <div className="space-y-3">
-        {insights.map((insight, idx) => (
-          <div 
-            key={idx}
-            className={`p-3 bg-slate-50/50 rounded-r-lg ${borderStyles[insight.type as keyof typeof borderStyles]} flex items-start gap-2.5`}
-          >
-            <Info className="w-4 h-4 text-slate-400 mt-0.5 shrink-0" />
-            <p className="text-slate-600 text-xs font-medium leading-relaxed">
-              {insight.text}
-            </p>
-          </div>
-        ))}
-      </div>
-
-      <button className="w-full flex items-center justify-center gap-1.5 mt-4 text-xs font-semibold text-[#185FA5] hover:text-[#185FA5]/80 transition-colors py-2 border border-slate-100 hover:border-slate-200 rounded-lg bg-slate-50/30">
-        Run Scenario Analysis <ArrowRight className="w-3.5 h-3.5" />
-      </button>
+      <InsightList scenario={scenario} />
     </div>
   );
-};
+}
+
+export const AIInsightCard: React.FC = () => (
+  <Suspense
+    fallback={
+      <div className="bg-white border border-slate-100 rounded-[20px] p-6 shadow-sm">
+        <div className="space-y-3">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <div key={i} className="h-14 bg-slate-50 rounded-lg animate-pulse" />
+          ))}
+        </div>
+      </div>
+    }
+  >
+    <AIInsightCardInner />
+  </Suspense>
+);

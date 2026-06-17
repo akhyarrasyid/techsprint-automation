@@ -1,10 +1,10 @@
 import React from 'react';
-import { 
-  LayoutDashboard, 
-  TrendingUp, 
-  Package, 
-  Layers, 
-  DollarSign, 
+import {
+  LayoutDashboard,
+  TrendingUp,
+  Package,
+  Layers,
+  DollarSign,
   UploadCloud,
   Sparkles,
   SlidersHorizontal,
@@ -13,11 +13,6 @@ import {
   AlertTriangle,
   Command,
   Activity,
-  Eye,
-  Download,
-  ClipboardList,
-  ShieldCheck,
-  FlaskConical,
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -46,6 +41,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => 
         { id: 'explainability', label: 'Explainable AI', icon: Brain },
         { id: 'anomalies', label: 'Anomaly Detection', icon: AlertTriangle },
         { id: 'kpi', label: 'KPI Engine', icon: Gauge },
+      ],
+    },
+    {
+      title: 'Data Management',
+      items: [
+        { id: 'upload', label: 'Upload Data', icon: UploadCloud },
       ],
     },
   ];

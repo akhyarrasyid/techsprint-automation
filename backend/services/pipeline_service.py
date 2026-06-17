@@ -51,19 +51,21 @@ INGREDIENT_DETAILS = {
     "INV-0032": {"name": "Paper Straw", "unit": "pcs", "unit_cost": 150.0, "supplier": "PT Kemasindo Pack", "lead_time": 4, "category": "Packaging"},
     "INV-0033": {"name": "Wooden Stirrer", "unit": "pcs", "unit_cost": 100.0, "supplier": "PT Kemasindo Pack", "lead_time": 4, "category": "Packaging"},
     "INV-0034": {"name": "Napkin", "unit": "pcs", "unit_cost": 50.0, "supplier": "PT Kemasindo Pack", "lead_time": 4, "category": "Packaging"},
-    # Food & Bakery (pcs/gram)
-    "INV-0035": {"name": "Croissant Plain Frozen", "unit": "pcs", "unit_cost": 12000.0, "supplier": "PT Bakery Mart", "lead_time": 2, "category": "Food"},
-    "INV-0036": {"name": "Almond Croissant Frozen", "unit": "pcs", "unit_cost": 15000.0, "supplier": "PT Bakery Mart", "lead_time": 2, "category": "Food"},
-    "INV-0037": {"name": "Banana Bread Slice", "unit": "pcs", "unit_cost": 10000.0, "supplier": "PT Bakery Mart", "lead_time": 2, "category": "Food"},
-    "INV-0038": {"name": "Chocolate Muffin", "unit": "pcs", "unit_cost": 9000.0, "supplier": "PT Bakery Mart", "lead_time": 2, "category": "Food"},
+    # Food & Bakery: unit_cost is per-serve cost matching BOM qty_used UoM
+    # Bread Loaf: loaf ~15,000 IDR / 20 slices → 750 IDR/slice for BOM
+    # Sparkling Water: BOM qty_used=200ml → 15 IDR/ml (5000 IDR / 330ml bottle)
+    "INV-0035": {"name": "Croissant Plain Frozen", "unit": "pcs", "unit_cost": 8000.0, "supplier": "PT Bakery Mart", "lead_time": 2, "category": "Food"},
+    "INV-0036": {"name": "Almond Croissant Frozen", "unit": "pcs", "unit_cost": 10000.0, "supplier": "PT Bakery Mart", "lead_time": 2, "category": "Food"},
+    "INV-0037": {"name": "Banana Bread Slice", "unit": "pcs", "unit_cost": 5000.0, "supplier": "PT Bakery Mart", "lead_time": 2, "category": "Food"},
+    "INV-0038": {"name": "Chocolate Muffin", "unit": "pcs", "unit_cost": 7000.0, "supplier": "PT Bakery Mart", "lead_time": 2, "category": "Food"},
     "INV-0039": {"name": "Cheese Slice", "unit": "pcs", "unit_cost": 1500.0, "supplier": "PT Bakery Mart", "lead_time": 2, "category": "Food"},
-    "INV-0040": {"name": "Bread Loaf", "unit": "pcs", "unit_cost": 15000.0, "supplier": "PT Bakery Mart", "lead_time": 2, "category": "Food"},
+    "INV-0040": {"name": "Bread Loaf", "unit": "pcs", "unit_cost": 750.0, "supplier": "PT Bakery Mart", "lead_time": 2, "category": "Food"},
     "INV-0041": {"name": "Butter", "unit": "gram", "unit_cost": 100.0, "supplier": "PT Bakery Mart", "lead_time": 2, "category": "Food"},
     "INV-0042": {"name": "Vanilla Ice Cream", "unit": "ml", "unit_cost": 20.0, "supplier": "PT Bakery Mart", "lead_time": 2, "category": "Food"},
     # Others
     "INV-0017": {"name": "Black Tea Bag", "unit": "pcs", "unit_cost": 1000.0, "supplier": "PT Agro Boga", "lead_time": 3, "category": "Tea"},
     "INV-0018": {"name": "Green Tea Bag", "unit": "pcs", "unit_cost": 1200.0, "supplier": "PT Agro Boga", "lead_time": 3, "category": "Tea"},
-    "INV-0022": {"name": "Sparkling Water", "unit": "pcs", "unit_cost": 5000.0, "supplier": "PT Agro Boga", "lead_time": 3, "category": "Beverage"},
+    "INV-0022": {"name": "Sparkling Water", "unit": "ml", "unit_cost": 15.0, "supplier": "PT Agro Boga", "lead_time": 3, "category": "Beverage"},
     "INV-0023": {"name": "Sugar", "unit": "gram", "unit_cost": 15.0, "supplier": "PT Agro Boga", "lead_time": 3, "category": "Pantry"},
     "INV-0024": {"name": "Ice Cube", "unit": "gram", "unit_cost": 2.0, "supplier": "PT Agro Boga", "lead_time": 3, "category": "Pantry"}
 }

@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { fetchHealth } from '../lib/api';
 import { HealthStatus } from '../lib/types';
-import { ShieldCheck, AlertTriangle, RefreshCw } from 'lucide-react';
+import { ShieldCheck, AlertTriangle, RefreshCw, Moon, Sun } from 'lucide-react';
+import { useTheme } from '../providers/theme-provider';
 
 interface TopbarProps {
   title: string;
@@ -12,6 +13,7 @@ interface TopbarProps {
 export const Topbar: React.FC<TopbarProps> = ({ title, scenario, setScenario }) => {
   const [health, setHealth] = useState<HealthStatus | null>(null);
   const [loadingHealth, setLoadingHealth] = useState(false);
+  const { theme, toggle } = useTheme();
 
   const checkHealth = async () => {
     setLoadingHealth(true);
@@ -48,6 +50,18 @@ export const Topbar: React.FC<TopbarProps> = ({ title, scenario, setScenario }) 
       <h1 className="text-lg font-bold text-slate-800 capitalize">{title}</h1>
 
       <div className="flex items-center gap-6">
+        {/* Dark mode toggle */}
+        <button
+          onClick={toggle}
+          className="p-2 rounded-lg hover:bg-slate-100 transition-colors"
+          title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+        >
+          {theme === 'dark'
+            ? <Sun className="w-4 h-4 text-amber-400" />
+            : <Moon className="w-4 h-4 text-slate-400" />
+          }
+        </button>
+
         {/* Scenario Selector */}
         <div className="flex items-center gap-2">
           <span className="text-xs font-semibold text-slate-400">Simulation:</span>

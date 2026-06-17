@@ -2,17 +2,23 @@
 
 import React, { Suspense } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { safeExplainability } from '../../../lib/mock';
+import { fetchExplainability } from '../../../lib/api';
+import ErrorBanner from '../../../components/error-banner';
+import EmptyState from '../../../components/empty-state';
 import { FeatureImportanceChart } from '../../../components/charts/feature-importance-chart';
 import { SHAPSummaryChart } from '../../../components/charts/shap-summary-chart';
 import { WaterfallChart } from '../../../components/charts/waterfall-chart';
 import { Brain, HelpCircle, Activity } from 'lucide-react';
 
 function ExplainabilityContent() {
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['explainability-report'],
-    queryFn: safeExplainability,
+    queryFn: fetchExplainability,
   });
+
+  if (!isLoading && error) {
+    return <ErrorBanner message={(error as Error).message} onRetry={refetch} />;
+  }
 
   return (
     <div className="space-y-6">

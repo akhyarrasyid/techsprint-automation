@@ -3,7 +3,9 @@
 import React, { Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
-import { safeInventory } from '../../../lib/mock';
+import { fetchInventory } from '../../../lib/api';
+import ErrorBanner from '../../../components/error-banner';
+import EmptyState from '../../../components/empty-state';
 import { MetricCard } from '../../../components/metric-card';
 import { InventoryChart } from '../../../components/charts/inventory-chart';
 import { StockRiskHeatmap } from '../../../components/charts/stock-risk-heatmap';
@@ -24,10 +26,17 @@ function InventoryContent() {
   const searchParams = useSearchParams();
   const scenario = searchParams.get('scenario') || 'Base';
 
-  const { data: inventory, isLoading } = useQuery({
+  const { data: inventory, isLoading, error, refetch } = useQuery({
     queryKey: ['inventory', scenario],
-    queryFn: () => safeInventory(scenario),
+    queryFn: () => fetchInventory(scenario),
   });
+
+  if (!isLoading && error) {
+    return <ErrorBanner message={(error as Error).message} onRetry={refetch} />;
+  }
+  if (!isLoading && !inventory?.length) {
+    return <EmptyState title="Belum ada data inventaris" description="Upload file sales history dan jalankan pipeline terlebih dahulu." />;
+  }
 
   const formatIDR = (val: number) => {
     return new Intl.NumberFormat('id-ID', {
